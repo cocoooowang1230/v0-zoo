@@ -1,10 +1,9 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useRef, memo } from "react"
-import Script from "next/script"
+import { useState, useEffect, memo } from "react"
 import { Button } from "@/components/ui/button"
-import { MessageSquare, ChevronDown, ChevronUp, Check, ExternalLink, ShieldCheck, Gift } from "lucide-react"
+import { MessageSquare, ChevronDown, ChevronUp, Check, ExternalLink, ShieldCheck } from "lucide-react"
 import { BottomNavigation } from "@/components/bottom-navigation"
 import { LionLogo } from "@/components/lion-logo"
 import { toast } from "@/components/ui/use-toast"
@@ -18,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
-import { MonitorPlay, Share2, Camera, Clock, Link as LinkIcon, Play, Pause, Maximize } from "lucide-react"
+import { MonitorPlay, Share2, Camera, Clock, Gift, Copy } from "lucide-react"
 import { formatCryptoValue } from "@/lib/utils"
 
 export default function TasksPage() {
@@ -150,7 +149,18 @@ export default function TasksPage() {
             onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
           />
 
-          <ImeiCampaignCard
+          {/* IMEI Tasks - Now Split */}
+          <ImeiShareTask
+            completedTasks={completedTasks}
+            onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
+          />
+
+          <ImeiVideoTask
+            completedTasks={completedTasks}
+            onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
+          />
+
+          <ImeiBuyTask
             completedTasks={completedTasks}
             onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
           />
@@ -423,11 +433,6 @@ function TaskCard({
   )
 }
 
-interface ImeiCampaignCardProps {
-  completedTasks?: string[]
-  onShowPrerequisite?: () => void
-}
-
 const GleamWidget = memo(() => {
   useEffect(() => {
     const script = document.createElement('script')
@@ -444,7 +449,7 @@ const GleamWidget = memo(() => {
   }, [])
 
   return (
-    <div className="mb-4">
+    <div className="mb-4 w-full overflow-hidden" style={{ minHeight: '400px' }}>
       <a className="e-widget no-button generic-loader" href="https://gleam.io/st1s5/task" rel="nofollow">
         TASK
       </a>
@@ -453,384 +458,356 @@ const GleamWidget = memo(() => {
 })
 GleamWidget.displayName = "GleamWidget"
 
-function ImeiCampaignCard({ completedTasks = [], onShowPrerequisite }: ImeiCampaignCardProps) {
+interface ImeiTaskProps {
+  completedTasks: string[]
+  onShowPrerequisite: () => void
+}
+
+function ImeiShareTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [subTasks, setSubTasks] = useState({
-    share: { status: "idle", url: "", platform: "facebook", currentCount: 1, limit: 3500 }, // idle, pending, completed
-    video: { status: "idle", finished: false, email: "", currentCount: 1, limit: 3500 },
-    buy: { status: "idle", url: "", platform: "instagram", currentCount: 1, limit: 300 },
+  const [state, setState] = useState({
+    status: "idle",
+    url: "",
+    platform: "facebook"
   })
-  const handleResubmit = (type: "share" | "buy") => {
-    setSubTasks((prev) => ({
-      ...prev,
-      [type]: { ...prev[type], status: "idle" },
-    }))
-  }
 
-  const handleVideoTaskSubmit = () => {
-    if (subTasks.video.currentCount >= subTasks.video.limit) {
-      toast({
-        title: "任務已結束",
-        description: "本任務已達參與人數上限",
-        variant: "destructive",
-      })
-      return
-    }
+  const reward = formatCryptoValue(0.00000109) + " WBTC"
+  const isCompleted = state.status === "completed"
 
-    if (!subTasks.video.email) {
-      toast({
-        title: "請填寫 Email",
-        description: "您需要填寫 Email 才能領取獎勵",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setSubTasks((prev) => ({
-      ...prev,
-      video: { ...prev.video, status: "completed" },
-    }))
-
-    toast({
-      title: "任務完成!",
-      description: `您獲得了 +${formatCryptoValue(0.00000109)} WBTC`,
-    })
-  }
-
-  const handleWatchVideo = () => {
-    window.open("/imei-campaign.mp4", "_blank")
-    setSubTasks((prev) => ({
-      ...prev,
-      video: { ...prev.video, finished: true },
-    }))
-  }
-
-  // Conversion rates (approx)
-  // 1 WBTC = 2,850,000 NTD
-
-  const handleSubmitShare = (type: "share" | "buy") => {
-    if (subTasks[type].currentCount >= subTasks[type].limit) {
-      toast({
-        title: "任務已結束",
-        description: "本任務已達參與人數上限",
-        variant: "destructive",
-      })
-      return
-    }
-
+  const handleSubmit = () => {
     // Simulate API call
-    setSubTasks((prev) => ({
-      ...prev,
-      [type]: { ...prev[type], status: "pending" },
-    }))
+    setState((prev) => ({ ...prev, status: "pending" }))
     toast({
       title: "提交成功",
       description: "您的回報已收到，將於 5-7 個工作天內完成審核。",
     })
   }
 
-  const handleOneClickShare = () => {
-    // Mock share behavior
-    const text = "義美食品，堅持好品質！快來參加活動賺取 BitBee 獎勵！ #義美 #BitBee"
-    const url = "https://bitbee.app/campaign/imei"
-
-    if (navigator.share) {
-      navigator.share({
-        title: '義美 I-Mei 特別活動',
-        text: text,
-        url: url,
-      }).catch(console.error)
-    } else {
-      // Fallback or just prompt
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank')
-    }
+  const handleResubmit = () => {
+    setState((prev) => ({ ...prev, status: "idle" }))
   }
 
+  const handleCopyText = async () => {
+    const text = "義美食品，堅持好品質！現在參加 BitBee 專屬活動，完成指定任務即可獲得加密貨幣獎勵！快來跟我一起參加吧！ #義美 #BitBee #堅持好品質"
 
-
-  const handleVerifyVideo = () => {
-    if (!subTasks.video.finished) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text)
+        toast({
+          title: "複製成功",
+          description: "活動文案已複製到剪貼簿",
+        })
+      } else {
+        // Fallback
+        const textArea = document.createElement("textarea")
+        textArea.value = text
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand("copy")
+        document.body.removeChild(textArea)
+        toast({
+          title: "複製成功",
+          description: "活動文案已複製到剪貼簿",
+        })
+      }
+    } catch (err) {
       toast({
-        title: "請先觀看影片",
-        description: "點擊「觀看影片」按鈕觀看後即可驗證",
+        title: "複製失敗",
+        description: "無法複製文字，請手動選取複製",
         variant: "destructive",
       })
-      return
     }
-
-    setSubTasks((prev) => ({
-      ...prev,
-      video: { ...prev.video, status: "completed" },
-    }))
-    toast({
-      title: "任務完成!",
-      description: `您獲得了 +${formatCryptoValue(0.00000109)} WBTC`,
-    })
   }
 
-  // Calculate total progress
-  const completedCount = Object.values(subTasks).filter((t) => t.status === "completed").length
-  const totalTasks = 3
-  const isAllCompleted = completedCount === totalTasks
-
   return (
-    <div
-      className={`bg-white rounded-xl border transition-all duration-200 overflow-hidden
-        ${isAllCompleted
-          ? "border-green-300 bg-green-50"
-          : isExpanded
-            ? "border-lion-orange shadow-lion"
-            : "border-lion-face-dark shadow-sm hover:shadow-lion"
-        }`}
-    >
+    <div className={`bg-white rounded-xl border transition-all duration-200 overflow-hidden ${isCompleted ? "border-green-300 bg-green-50" : isExpanded ? "border-lion-orange shadow-lion" : "border-lion-face-dark shadow-sm hover:shadow-lion"}`}>
       <div
         className="flex items-start p-4 cursor-pointer"
         onClick={() => {
           if (!completedTasks.includes("identity")) {
-            if (onShowPrerequisite) onShowPrerequisite()
+            onShowPrerequisite()
             return
           }
           setIsExpanded(!isExpanded)
         }}
       >
-        <div className="p-3 rounded-full mr-3 shadow-sm bg-red-600">
-          <Gift className="h-5 w-5 text-white" />
+        <div className={`p-3 rounded-full mr-3 shadow-sm ${isCompleted ? "bg-green-500" : "bg-red-600"}`}>
+          {isCompleted ? <Check className="h-5 w-5 text-white" /> : <Gift className="h-5 w-5 text-white" />}
         </div>
-
         <div className="flex-1">
-          <h3 className="font-bold text-gray-900">義美 I-Mei 特別活動</h3>
-          <p className="text-sm text-gray-600">完成系列任務賺取高額 WBTC 獎勵</p>
+          <h3 className="font-bold text-lion-accent">義美活動: 分享活動辦法</h3>
+          <p className="text-sm text-gray-600">分享活動文案至社群媒體</p>
         </div>
-
         <div className="flex flex-col items-end">
           <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-sm border border-lion-face-dark mb-1">
-            Up to {formatCryptoValue(0.00000767)} WBTC
+            +{reward}
           </div>
-          <div className="text-gray-400">
-            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </div>
+          {!isCompleted && <div className="text-gray-400">{isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>}
         </div>
       </div>
 
-      {isExpanded && (
-        <div className="px-4 pb-4 pt-0 space-y-4">
+      {isExpanded && !isCompleted && (
+        <div className="px-4 pb-4 pt-0">
           <div className="border-t border-gray-100 pt-3 space-y-4">
-
-            {/* Task 1: Share */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center gap-2 mb-2">
-                <Share2 className="h-5 w-5 text-blue-500" />
-                <h4 className="font-bold text-gray-800">1. 分享活動辦法</h4>
-                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                  +{formatCryptoValue(0.00000109)} WBTC
-                </span>
+            {/* Event Banner */}
+            <div className="mb-4 rounded-lg overflow-hidden border border-gray-200">
+              <div className="aspect-[1080/360] bg-gray-200 w-full flex items-center justify-center text-gray-400">
+                <span className="text-sm">活動 Banner 版位 (1080 x 360)</span>
               </div>
+            </div>
 
-              <div className="mb-3 text-xs text-gray-500 font-mono bg-gray-100 inline-block px-2 py-1 rounded">
-                參與人數：{subTasks.share.currentCount.toString().padStart(4, '0')} / {subTasks.share.limit.toLocaleString()}
+            {/* Campaign Details & Copy */}
+            <div className="mb-4 p-3 bg-white rounded border border-gray-100 text-sm text-gray-600 space-y-2">
+              <p className="font-medium text-gray-800">活動文案：</p>
+              <p>義美食品，堅持好品質！現在參加 BitBee 專屬活動，完成指定任務即可獲得加密貨幣獎勵！快來跟我一起參加吧！ #義美 #BitBee #堅持好品質</p>
+              <div className="flex gap-2 pt-2">
+                <a href="#" className="text-blue-600 hover:underline text-xs flex items-center">
+                  查看活動詳情 <ExternalLink className="h-3 w-3 ml-1" />
+                </a>
               </div>
+            </div>
 
-              {/* Event Banner */}
-              <div className="mb-4 rounded-lg overflow-hidden border border-gray-200">
-                <div className="aspect-[3/1] bg-gray-200 w-full flex items-center justify-center text-gray-400">
-                  <span className="text-sm">活動 Banner 版位 (3:1)</span>
+            <Button variant="outline" size="sm" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 mb-4" onClick={handleCopyText}>
+              <Copy className="h-4 w-4 mr-2" />
+              複製文案
+            </Button>
+
+            <p className="text-sm text-gray-600 mb-2">請將上述文案分享至「公開」社群，並回填貼文網址：</p>
+            <p className="text-xs text-red-600 mb-2">(連結錯誤將視為無效，無法獲得獎勵，請確認後送出。)</p>
+
+            {state.status === 'idle' ? (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <select
+                    className="text-sm border rounded-md px-2 bg-white"
+                    value={state.platform}
+                    onChange={(e) => setState(prev => ({ ...prev, platform: e.target.value }))}
+                  >
+                    <option value="facebook">Facebook</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="threads">Threads</option>
+                    <option value="line">LINE</option>
+                    <option value="x">X (Twitter)</option>
+                  </select>
+                  <Input
+                    placeholder="貼文連結 URL"
+                    className="h-9"
+                    value={state.url}
+                    onChange={(e) => setState(prev => ({ ...prev, url: e.target.value }))}
+                  />
                 </div>
-                {/* <img src="/campaign-banner.jpg" alt="Campaign Banner" className="w-full h-full object-cover" /> */}
-              </div>
-
-              {/* Campaign Details & Copy */}
-              <div className="mb-4 p-3 bg-white rounded border border-gray-100 text-sm text-gray-600 space-y-2">
-                <p className="font-medium text-gray-800">活動文案：</p>
-                <p>「義美食品，堅持好品質！現在參加 BitBee 專屬活動，完成指定任務即可獲得加密貨幣獎勵！快來跟我一起參加吧！ #義美 #BitBee #堅持好品質」</p>
-                <div className="flex gap-2 pt-2">
-                  <a href="#" className="text-blue-600 hover:underline text-xs flex items-center">
-                    查看活動詳情 <ExternalLink className="h-3 w-3 ml-1" />
-                  </a>
-                </div>
-              </div>
-
-              <div className="mb-4">
                 <Button
-                  variant="outline"
                   size="sm"
-                  className="w-full text-blue-600 border-blue-200 hover:bg-blue-50"
-                  onClick={handleOneClickShare}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={handleSubmit}
+                  disabled={!state.url}
                 >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  一鍵分享
+                  提交驗證
                 </Button>
               </div>
-
-              <p className="text-sm text-gray-600 mb-2">請將上述文案分享至「公開」社群，並回填貼文網址：</p>
-
-              {subTasks.share.status === 'idle' ? (
-                <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <select
-                      className="text-sm border rounded-md px-2 bg-white"
-                      value={subTasks.share.platform}
-                      onChange={(e) => setSubTasks(prev => ({ ...prev, share: { ...prev.share, platform: e.target.value } }))}
-                    >
-                      <option value="facebook">Facebook</option>
-                      <option value="instagram">Instagram</option>
-                      <option value="threads">Threads</option>
-                      <option value="line">LINE</option>
-                      <option value="x">X (Twitter)</option>
-                    </select>
-                    <Input
-                      placeholder="貼文連結 URL"
-                      className="h-9"
-                      value={subTasks.share.url}
-                      onChange={(e) => setSubTasks(prev => ({ ...prev, share: { ...prev.share, url: e.target.value } }))}
-                    />
-                  </div>
-                  <Button
-                    size="sm"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={() => handleSubmitShare('share')}
-                    disabled={!subTasks.share.url}
-                  >
-                    提交驗證
+            ) : (
+              <div className="bg-yellow-50 text-yellow-800 text-sm p-3 rounded-lg border border-yellow-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-medium">審核中 (預計 5-7 個工作天)</span>
+                </div>
+                <div className="flex justify-end">
+                  <Button variant="ghost" size="sm" onClick={handleResubmit} className="text-xs h-7 text-yellow-700 hover:text-yellow-900 hover:bg-yellow-100">
+                    重新提交
                   </Button>
                 </div>
-              ) : (
-                <div className="bg-yellow-50 text-yellow-800 text-sm p-3 rounded-lg border border-yellow-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="h-4 w-4" />
-                    <span className="font-medium">{subTasks.share.status === 'completed' ? "驗證已完成！" : "審核中 (預計 5-7 個工作天)"}</span>
-                  </div>
-                  {subTasks.share.status === 'pending' && (
-                    <div className="flex justify-end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleResubmit('share')}
-                        className="text-xs h-7 text-yellow-700 hover:text-yellow-900 hover:bg-yellow-100"
-                      >
-                        重新提交
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Task 2: Video */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center gap-2 mb-2">
-                <MonitorPlay className="h-5 w-5 text-red-500" />
-                <h4 className="font-bold text-gray-800">2. 觀看宣傳影片</h4>
-                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                  +{formatCryptoValue(0.00000109)} WBTC
-                </span>
               </div>
-
-              <div className="mb-3 text-xs text-gray-500 font-mono bg-gray-100 inline-block px-2 py-1 rounded">
-                參與人數：{subTasks.video.currentCount.toString().padStart(4, '0')} / {subTasks.video.limit.toLocaleString()}
-              </div>
-              <p className="text-sm text-gray-600 mb-3">完整觀看影片並填寫 Email 即可獲得獎勵。</p>
-
-              <GleamWidget />
-
-              {subTasks.video.status === "idle" ? (
-                <div className="space-y-3">
-                  <Input
-                    placeholder="請輸入您的 Email 以領取獎勵"
-                    value={subTasks.video.email || ""}
-                    onChange={(e) =>
-                      setSubTasks((prev) => ({ ...prev, video: { ...prev.video, email: e.target.value } }))
-                    }
-                  />
-                  <Button
-                    size="sm"
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
-                    onClick={handleVideoTaskSubmit}
-                    disabled={!subTasks.video.email}
-                  >
-                    領取獎勵
-                  </Button>
-                </div>
-              ) : (
-                <div className="bg-green-50 text-green-800 text-sm p-3 rounded-lg border border-green-200">
-                  <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4" />
-                    <span className="font-medium">任務已完成！</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Task 3: Buy & Photo */}
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <div className="flex items-center gap-2 mb-2">
-                <Camera className="h-5 w-5 text-purple-500" />
-                <h4 className="font-bold text-gray-800">3. 購買商品拍照分享</h4>
-                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                  +{formatCryptoValue(0.00000549)} WBTC
-                </span>
-              </div>
-
-              <div className="mb-3 text-xs text-gray-500 font-mono bg-gray-100 inline-block px-2 py-1 rounded">
-                參與人數：{subTasks.buy.currentCount.toString().padStart(3, '0')} / {subTasks.buy.limit.toLocaleString()}
-              </div>
-              <p className="text-sm text-gray-600 mb-3">購買義美商品合照並公開分享，回填貼文網址。</p>
-
-              {subTasks.buy.status === 'idle' ? (
-                <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <select
-                      className="text-sm border rounded-md px-2 bg-white"
-                      value={subTasks.buy.platform}
-                      onChange={(e) => setSubTasks(prev => ({ ...prev, buy: { ...prev.buy, platform: e.target.value } }))}
-                    >
-                      <option value="facebook">Facebook</option>
-                      <option value="instagram">Instagram</option>
-                      <option value="threads">Threads</option>
-                      <option value="line">LINE</option>
-                      <option value="x">X (Twitter)</option>
-                    </select>
-                    <Input
-                      placeholder="貼文連結 URL"
-                      className="h-9"
-                      value={subTasks.buy.url}
-                      onChange={(e) => setSubTasks(prev => ({ ...prev, buy: { ...prev.buy, url: e.target.value } }))}
-                    />
-                  </div>
-                  <Button
-                    size="sm"
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                    onClick={() => handleSubmitShare('buy')}
-                    disabled={!subTasks.buy.url}
-                  >
-                    提交驗證
-                  </Button>
-                </div>
-              ) : (
-                <div className="bg-yellow-50 text-yellow-800 text-sm p-3 rounded-lg border border-yellow-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="h-4 w-4" />
-                    <span className="font-medium">{subTasks.buy.status === 'completed' ? "驗證已完成！" : "審核中 (預計 5-7 個工作天)"}</span>
-                  </div>
-                  {subTasks.buy.status === 'pending' && (
-                    <div className="flex justify-end">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleResubmit('buy')}
-                        className="text-xs h-7 text-yellow-700 hover:text-yellow-900 hover:bg-yellow-100"
-                      >
-                        重新提交
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
+            )}
           </div>
-        </div >
-      )
-      }
-    </div >
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ImeiVideoTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [state, setState] = useState({
+    status: "idle",
+    email: "",
+    limit: 3500,
+    currentCount: 1
+  })
+
+  const reward = formatCryptoValue(0.00000109) + " WBTC"
+  const isCompleted = state.status === "completed"
+
+  const handleSubmit = () => {
+    if (state.currentCount >= state.limit) {
+      toast({ title: "任務已結束", description: "本任務已達參與人數上限", variant: "destructive" })
+      return
+    }
+    if (!state.email) {
+      toast({ title: "請填寫 Email", description: "您需要填寫 Email 才能領取獎勵", variant: "destructive" })
+      return
+    }
+    setState((prev) => ({ ...prev, status: "completed" }))
+    toast({ title: "任務完成!", description: `您獲得了 +${reward}` })
+  }
+
+  return (
+    <div className={`bg-white rounded-xl border transition-all duration-200 overflow-hidden ${isCompleted ? "border-green-300 bg-green-50" : isExpanded ? "border-lion-orange shadow-lion" : "border-lion-face-dark shadow-sm hover:shadow-lion"}`}>
+      <div
+        className="flex items-start p-4 cursor-pointer"
+        onClick={() => {
+          if (!completedTasks.includes("identity")) {
+            onShowPrerequisite()
+            return
+          }
+          setIsExpanded(!isExpanded)
+        }}
+      >
+        <div className={`p-3 rounded-full mr-3 shadow-sm ${isCompleted ? "bg-green-500" : "bg-red-600"}`}>
+          {isCompleted ? <Check className="h-5 w-5 text-white" /> : <Gift className="h-5 w-5 text-white" />}
+        </div>
+        <div className="flex-1">
+          <h3 className="font-bold text-lion-accent">義美活動: 觀看宣傳影片</h3>
+          <p className="text-sm text-gray-600">完整觀看影片並填寫 Email</p>
+        </div>
+        <div className="flex flex-col items-end">
+          <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-sm border border-lion-face-dark mb-1">
+            +{reward}
+          </div>
+          {!isCompleted && <div className="text-gray-400">{isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>}
+        </div>
+      </div>
+
+      {isExpanded && !isCompleted && (
+        <div className="px-4 pb-4 pt-0">
+          <div className="border-t border-gray-100 pt-3 space-y-4">
+            <p className="text-sm text-gray-600 mb-3">完整觀看影片並填寫 Email 即可獲得獎勵。</p>
+            <GleamWidget />
+            <div className="space-y-3">
+              <Input
+                placeholder="請輸入您的 Email 以領取獎勵"
+                value={state.email}
+                onChange={(e) => setState((prev) => ({ ...prev, email: e.target.value }))}
+              />
+              <Button
+                size="sm"
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+                onClick={handleSubmit}
+                disabled={!state.email}
+              >
+                領取獎勵
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ImeiBuyTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [state, setState] = useState({
+    status: "idle",
+    url: "",
+    platform: "instagram",
+    limit: 300,
+    currentCount: 1
+  })
+
+  const reward = formatCryptoValue(0.00000549) + " WBTC"
+  const isCompleted = state.status === "completed"
+
+  const handleSubmit = () => {
+    setState((prev) => ({ ...prev, status: "pending" }))
+    toast({
+      title: "提交成功",
+      description: "您的回報已收到，將於 5-7 個工作天內完成審核。",
+    })
+  }
+
+  const handleResubmit = () => {
+    setState((prev) => ({ ...prev, status: "idle" }))
+  }
+
+  return (
+    <div className={`bg-white rounded-xl border transition-all duration-200 overflow-hidden ${isCompleted ? "border-green-300 bg-green-50" : isExpanded ? "border-lion-orange shadow-lion" : "border-lion-face-dark shadow-sm hover:shadow-lion"}`}>
+      <div
+        className="flex items-start p-4 cursor-pointer"
+        onClick={() => {
+          if (!completedTasks.includes("identity")) {
+            onShowPrerequisite()
+            return
+          }
+          setIsExpanded(!isExpanded)
+        }}
+      >
+        <div className={`p-3 rounded-full mr-3 shadow-sm ${isCompleted ? "bg-green-500" : "bg-red-600"}`}>
+          {isCompleted ? <Check className="h-5 w-5 text-white" /> : <Gift className="h-5 w-5 text-white" />}
+        </div>
+        <div className="flex-1">
+          <h3 className="font-bold text-lion-accent">義美活動: 購買商品拍照分享</h3>
+          <p className="text-sm text-gray-600">購買義美商品合照並公開分享</p>
+        </div>
+        <div className="flex flex-col items-end">
+          <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-sm border border-lion-face-dark mb-1">
+            +{reward}
+          </div>
+          {!isCompleted && <div className="text-gray-400">{isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>}
+        </div>
+      </div>
+
+      {isExpanded && !isCompleted && (
+        <div className="px-4 pb-4 pt-0">
+          <div className="border-t border-gray-100 pt-3 space-y-4">
+            <p className="text-sm text-gray-600 mb-2">購買義美商品合照並公開分享，回填貼文網址。</p>
+            <p className="text-xs text-red-600 mb-3">(連結錯誤將視為無效，無法獲得獎勵，請確認後送出。)</p>
+
+            {state.status === 'idle' ? (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <select
+                    className="text-sm border rounded-md px-2 bg-white"
+                    value={state.platform}
+                    onChange={(e) => setState(prev => ({ ...prev, platform: e.target.value }))}
+                  >
+                    <option value="facebook">Facebook</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="threads">Threads</option>
+                    <option value="line">LINE</option>
+                    <option value="x">X (Twitter)</option>
+                  </select>
+                  <Input
+                    placeholder="貼文連結 URL"
+                    className="h-9"
+                    value={state.url}
+                    onChange={(e) => setState(prev => ({ ...prev, url: e.target.value }))}
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  onClick={handleSubmit}
+                  disabled={!state.url}
+                >
+                  提交驗證
+                </Button>
+              </div>
+            ) : (
+              <div className="bg-yellow-50 text-yellow-800 text-sm p-3 rounded-lg border border-yellow-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-medium">審核中 (預計 5-7 個工作天)</span>
+                </div>
+                <div className="flex justify-end">
+                  <Button variant="ghost" size="sm" onClick={handleResubmit} className="text-xs h-7 text-yellow-700 hover:text-yellow-900 hover:bg-yellow-100">
+                    重新提交
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

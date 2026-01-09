@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Wallet } from "lucide-react"
+import { WalletBindingModal } from "@/components/wallet-binding-modal"
 import { WithdrawalModal } from "@/components/withdrawal-modal"
 
 export default function Home() {
@@ -41,7 +42,7 @@ export default function Home() {
     ],
   })
   const [todaysClaimed, setTodaysClaimed] = useState(false)
-  const [totalRewards, setTotalRewards] = useState(0)
+  const [totalRewards, setTotalRewards] = useState(0.00000037)
   const [linkCopied, setLinkCopied] = useState(false)
   const [isWalletConnected, setIsWalletConnected] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
@@ -50,65 +51,13 @@ export default function Home() {
   // Withdrawal/Binding State
   const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false)
   const [exchangeUid, setExchangeUid] = useState("")
-  const [uidError, setUidError] = useState("")
+
   const [isUidBound, setIsUidBound] = useState(false)
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false)
 
   const referralLink = "https://bitbee.app/register?ref=Kkwf5b"
 
-  // Mock data for existing UIDs to simulate uniqueness check
-  const EXISTING_UIDS = ["USER123", "TEST999", "USED888"]
 
-  // Validation regex: Alphanumeric, 6-20 characters
-  const UID_REGEX = /^[a-zA-Z0-9]{6,20}$/
-
-  const handleUidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setExchangeUid(value)
-
-    if (value && !UID_REGEX.test(value)) {
-      setUidError("格式錯誤：請輸入 6-20 位英數字")
-    } else {
-      setUidError("")
-    }
-  }
-
-  const handleBindUid = () => {
-    // Final validation before submit
-    if (!exchangeUid) {
-      setUidError("請輸入交易所 UID")
-      return
-    }
-
-    if (!UID_REGEX.test(exchangeUid)) {
-      setUidError("格式錯誤：請輸入 6-20 位英數字")
-      return
-    }
-
-    // Check Uniqueness
-    if (EXISTING_UIDS.includes(exchangeUid)) {
-      // User requested "popup window hint" - using toast is standard, but we can also use confirm/alert
-      // or just set a specific error asking them to confirm. 
-      // Requirement: "UI 需彈出視窗提示"
-      toast({
-        title: "綁定失敗",
-        description: "此 UID 已被其他帳號使用，請重新確認",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Success
-    setIsUidBound(true)
-    setIsWithdrawDialogOpen(false)
-    toast({
-      title: "綁定成功",
-      description: "您的交易所 UID 已成功綁定",
-    })
-
-    // Save to local storage for persistence nicely
-    localStorage.setItem("exchangeUid", exchangeUid)
-  }
 
   // Load bound UID on mount
   useEffect(() => {
@@ -344,8 +293,8 @@ export default function Home() {
               </div>
               <p className="text-xl font-bold text-orange-500">
                 {showWbtcInTwd
-                  ? `NT$ ${Math.round(0.0000037 * 2850000).toLocaleString()}`
-                  : `x ${formatCryptoValue(0.0000037)}`}
+                  ? `NT$ ${Math.round(0.00000037 * 2850000).toLocaleString()}`
+                  : `x ${formatCryptoValue(0.00000037)}`}
               </p>
               {showWbtcInTwd && <p className="text-xs text-gray-500 mt-1">≈ 1 BTC = NT$ 2,850,000</p>}
             </div>
@@ -355,16 +304,12 @@ export default function Home() {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (isUidBound) {
-                setIsWithdrawalModalOpen(true)
-              } else {
-                setIsWithdrawDialogOpen(true)
-              }
+              setIsWithdrawalModalOpen(true)
             }}
-            className={`w-full mt-3 border-lion-orange text-lion-orange hover:bg-lion-orange/10 ${isUidBound ? "bg-lion-orange/5" : ""}`}
+            className={`w-full mt-3 border-lion-orange text-lion-orange hover:bg-lion-orange/10 bg-lion-orange/5`}
           >
-            {isUidBound ? <Wallet className="h-4 w-4 mr-2" /> : <Wallet className="h-4 w-4 mr-2" />}
-            {isUidBound ? "提現 / 出金" : "我要提領 / 綁定錢包"}
+            <Wallet className="h-4 w-4 mr-2" />
+            提現
           </Button>
         </Card>
 
@@ -513,76 +458,23 @@ export default function Home() {
       />
 
       {/* Withdrawal / Binding Dialog */}
-      <AlertDialog open={isWithdrawDialogOpen} onOpenChange={setIsWithdrawDialogOpen}>
-        <AlertDialogContent className="bg-white max-w-[90%] sm:max-w-md rounded-xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-bold text-center border-b pb-2">
-              {isUidBound ? "交易所錢包綁定資訊" : "綁定交易所錢包"}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="pt-4 text-left">
-              <div className="space-y-4">
-                {isUidBound ? (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                    <p className="text-sm text-green-800 font-medium mb-1">您已成功綁定交易所 UID</p>
-                    <p className="text-2xl font-bold text-gray-800 tracking-wider">{exchangeUid}</p>
-                    <p className="text-xs text-green-600 mt-2">如需變更請聯繫客服</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">
-                        請輸入您的交易所錢包 UID
-                      </label>
-                      <Input
-                        value={exchangeUid}
-                        onChange={handleUidChange}
-                        placeholder="例如: 12345678"
-                        className={`text-lg ${uidError ? "border-red-500 focus-visible:ring-red-500" : ""}`}
-                      />
-                      {uidError && (
-                        <p className="text-xs text-red-500 flex items-center mt-1">
-                          ⚠️ {uidError}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-xs text-amber-800">
-                      <p className="font-bold flex items-center mb-1">
-                        ⚠️ 注意事項：
-                      </p>
-                      <p>每個交易所 UID 僅限綁定一個 LINE 帳號，綁定後不可輕易更改。請務必確認輸入正確。</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2 mt-2">
-            <AlertDialogCancel
-              className="mt-0 w-full sm:w-auto"
-              onClick={() => {
-                if (!isUidBound) {
-                  setExchangeUid("")
-                  setUidError("")
-                }
-              }}
-            >
-              關閉
-            </AlertDialogCancel>
-            {!isUidBound && (
-              <AlertDialogAction
-                className="w-full sm:w-auto bg-lion-orange hover:bg-lion-red"
-                onClick={(e) => {
-                  e.preventDefault() // Prevent auto-close
-                  handleBindUid()
-                }}
-              >
-                確認綁定
-              </AlertDialogAction>
-            )}
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <WalletBindingModal
+        open={isWithdrawDialogOpen}
+        onOpenChange={setIsWithdrawDialogOpen}
+        onBindSuccess={(uid) => {
+          setIsUidBound(true)
+          setExchangeUid(uid)
+          localStorage.setItem("exchangeUid", uid)
+          setIsWithdrawDialogOpen(false) // Close binding modal
+          // Optional: automatically open withdrawal modal? 
+          // The Step 4 CTA is "Go to Withdraw", which triggers onGoToWithdraw.
+          // So we might not need to auto open here if the user clicks the button.
+        }}
+        onGoToWithdraw={() => {
+          setIsWithdrawDialogOpen(false)
+          setIsWithdrawalModalOpen(true)
+        }}
+      />
     </div>
   )
 }
