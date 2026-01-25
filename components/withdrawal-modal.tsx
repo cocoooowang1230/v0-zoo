@@ -40,7 +40,7 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances }: Withdrawa
     }
 
     const MIN_WITHDRAWAL_USDT = 10
-    const MIN_WITHDRAWAL_WBTC = 0.00011
+    const MIN_WITHDRAWAL_WBTC = 0.0001
 
     // Reset state when opening
     useEffect(() => {

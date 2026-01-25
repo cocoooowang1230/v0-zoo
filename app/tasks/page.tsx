@@ -26,6 +26,8 @@ export default function TasksPage() {
   const [discordVerifying, setDiscordVerifying] = useState(false)
   const [identityVerifying, setIdentityVerifying] = useState(false)
   const [showPrerequisiteDialog, setShowPrerequisiteDialog] = useState(false)
+  const [globalQuotaFull, setGlobalQuotaFull] = useState(false)
+  const [debugStatus, setDebugStatus] = useState<"idle" | "pending" | "rejected" | "completed">("idle") // Status testing state
 
   useEffect(() => {
     // Generate referral link - you can customize this logic
@@ -111,10 +113,30 @@ export default function TasksPage() {
   return (
     <div className="flex flex-col min-h-screen bg-lion-face-light pb-16">
       {/* Header */}
-      <header className="bg-gradient-to-r from-lion-orange to-lion-red text-white p-4 text-center shadow-md">
+      <header className="bg-gradient-to-r from-lion-orange to-lion-red text-white p-4 text-center shadow-md relative">
         <div className="flex items-center justify-center gap-2">
           <LionLogo size="sm" />
           <h1 className="text-2xl font-bold">任務中心</h1>
+        </div>
+
+        {/* Debug Controls */}
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-1">
+          <button
+            onClick={() => setGlobalQuotaFull(!globalQuotaFull)}
+            className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded text-[9px] border border-white/30 transition-all font-mono"
+          >
+            {globalQuotaFull ? "📢 FULL" : "📢 OPEN"}
+          </button>
+          <button
+            onClick={() => {
+              const states: ("idle" | "pending" | "rejected" | "completed")[] = ["idle", "pending", "rejected", "completed"];
+              const currentIndex = states.indexOf(debugStatus);
+              setDebugStatus(states[(currentIndex + 1) % states.length]);
+            }}
+            className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded text-[9px] border border-white/30 transition-all font-mono"
+          >
+            � {debugStatus.toUpperCase()}
+          </button>
         </div>
       </header>
 
@@ -158,16 +180,22 @@ export default function TasksPage() {
           <ImeiShareTask
             completedTasks={completedTasks}
             onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
+            isQuotaFull={globalQuotaFull}
+            debugStatus={debugStatus}
           />
 
           <ImeiVideoTask
             completedTasks={completedTasks}
             onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
+            isQuotaFull={globalQuotaFull}
+            debugStatus={debugStatus}
           />
 
           <ImeiBuyTask
             completedTasks={completedTasks}
             onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
+            isQuotaFull={globalQuotaFull}
+            debugStatus={debugStatus}
           />
         </div>
       </div>
@@ -466,9 +494,11 @@ GleamWidget.displayName = "GleamWidget"
 interface ImeiTaskProps {
   completedTasks: string[]
   onShowPrerequisite: () => void
+  isQuotaFull?: boolean
+  debugStatus?: "idle" | "pending" | "rejected" | "completed"
 }
 
-function ImeiShareTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
+function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus }: ImeiTaskProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [state, setState] = useState({
     status: "idle",
@@ -476,12 +506,20 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
     platform: "facebook"
   })
 
+  // Synchronize internal state with prop for testing
+  const [localStatus, setLocalStatus] = useState<string | null>(null);
+  useEffect(() => { setLocalStatus(null); }, [debugStatus]);
+
+  const activeStatus = localStatus || (debugStatus !== "idle" ? debugStatus : state.status);
+  const activeQuotaFull = isQuotaFull;
+  const isCompleted = activeStatus === "completed" || completedTasks.includes("imei_share")
+
   const reward = formatCryptoValue(0.00000109) + " WBTC"
-  const isCompleted = state.status === "completed"
 
   const handleSubmit = () => {
     // Simulate API call
     setState((prev) => ({ ...prev, status: "pending" }))
+    setLocalStatus("pending")
     toast({
       title: "提交成功",
       description: "您的回報已收到，將於 5-7 個工作天內完成審核。",
@@ -490,6 +528,7 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
 
   const handleResubmit = () => {
     setState((prev) => ({ ...prev, status: "idle" }))
+    setLocalStatus("idle")
   }
 
   const handleCopyText = async () => {
@@ -551,6 +590,17 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
         </div>
       </div>
 
+      {isCompleted && (
+        <div className="px-4 pb-4 pt-0">
+          <div className="border-t border-green-100 pt-3">
+            <p className="text-sm text-green-600 flex items-center">
+              <Check className="h-4 w-4 mr-1" />
+              任務已完成！
+            </p>
+          </div>
+        </div>
+      )}
+
       {isExpanded && !isCompleted && (
         <div className="px-4 pb-4 pt-0">
           <div className="border-t border-gray-100 pt-3 space-y-4">
@@ -580,7 +630,7 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
             <p className="text-sm text-gray-600 mb-2">請將上述文案分享至「公開」社群，並回填貼文網址：</p>
             <p className="text-xs text-red-600 mb-2">(連結錯誤將視為無效，無法獲得獎勵，請確認後送出。)</p>
 
-            {state.status === 'idle' ? (
+            {activeStatus === 'idle' ? (
               <div className="space-y-3">
                 <div className="flex gap-2">
                   <select
@@ -603,21 +653,40 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
                 </div>
                 <Button
                   size="sm"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                  className={`w-full ${activeQuotaFull ? 'bg-red-500 cursor-not-allowed opacity-70' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium`}
                   onClick={handleSubmit}
-                  disabled={!state.url}
+                  disabled={!state.url || activeQuotaFull}
                 >
-                  提交驗證
+                  {activeQuotaFull ? "名額已滿" : "提交驗證"}
                 </Button>
+                {!activeQuotaFull && (
+                  <p className="text-xs text-orange-600 text-center mt-2">名額有限，提交後將進入審核排隊</p>
+                )}
+              </div>
+            ) : activeStatus === 'pending' ? (
+              <div className="bg-blue-50 text-blue-800 text-sm p-4 rounded-lg border border-blue-200 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                  <span className="font-bold">審核中 (預計 5-7 個工作天)</span>
+                </div>
+                <p className="text-xs text-blue-600">名額有限，提交後將進入審核排隊</p>
+                <div className="flex justify-end">
+                  <Button variant="outline" size="sm" onClick={handleResubmit} className="text-xs h-8 border-blue-200 text-blue-700 hover:bg-blue-100">
+                    重新提交
+                  </Button>
+                </div>
               </div>
             ) : (
-              <div className="bg-yellow-50 text-yellow-800 text-sm p-3 rounded-lg border border-yellow-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-4 w-4" />
-                  <span className="font-medium">審核中 (預計 5-7 個工作天)</span>
+              <div className="bg-red-50 text-red-800 text-sm p-4 rounded-lg border border-red-200 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="bg-red-500 rounded-full p-1">
+                    <Check className="h-3 w-3 text-white transform rotate-45" />
+                  </div>
+                  <span className="font-bold">未通過</span>
                 </div>
+                <p className="text-xs text-red-600">您的提交未符合活動規範。如有疑問可更新連結後重新提交。</p>
                 <div className="flex justify-end">
-                  <Button variant="ghost" size="sm" onClick={handleResubmit} className="text-xs h-7 text-yellow-700 hover:text-yellow-900 hover:bg-yellow-100">
+                  <Button variant="outline" size="sm" onClick={handleResubmit} className="text-xs h-8 border-red-200 text-red-700 hover:bg-red-100">
                     重新提交
                   </Button>
                 </div>
@@ -630,20 +699,25 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
   )
 }
 
-function ImeiVideoTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
+function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus }: ImeiTaskProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [state, setState] = useState({
     status: "idle",
-    email: "",
-    limit: 3500,
-    currentCount: 1
+    email: ""
   })
 
+  // Synchronize internal state with prop for testing
+  const [localStatus, setLocalStatus] = useState<string | null>(null);
+  useEffect(() => { setLocalStatus(null); }, [debugStatus]);
+
+  const activeQuotaFull = isQuotaFull;
+  const activeStatus = localStatus || (debugStatus !== "idle" ? debugStatus : state.status);
+  const isCompleted = activeStatus === "completed" || completedTasks.includes("imei_video")
+
   const reward = formatCryptoValue(0.00000109) + " WBTC"
-  const isCompleted = state.status === "completed"
 
   const handleSubmit = () => {
-    if (state.currentCount >= state.limit) {
+    if (activeQuotaFull) {
       toast({ title: "任務已結束", description: "本任務已達參與人數上限", variant: "destructive" })
       return
     }
@@ -652,6 +726,7 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
       return
     }
     setState((prev) => ({ ...prev, status: "completed" }))
+    setLocalStatus("completed")
     toast({ title: "任務完成!", description: `您獲得了 +${reward}` })
   }
 
@@ -682,48 +757,83 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
         </div>
       </div>
 
-      {isExpanded && !isCompleted && (
+      {isCompleted && (
         <div className="px-4 pb-4 pt-0">
-          <div className="border-t border-gray-100 pt-3 space-y-4">
-            <p className="text-sm text-gray-600 mb-3">完整觀看影片並填寫 Email 即可獲得獎勵。</p>
-            <GleamWidget href="https://gleam.io/st1s5/task" />
-            <div className="space-y-3">
-              <Input
-                placeholder="請輸入您的 Email 以領取獎勵"
-                value={state.email}
-                onChange={(e) => setState((prev) => ({ ...prev, email: e.target.value }))}
-              />
-              <Button
-                size="sm"
-                className="w-full bg-red-600 hover:bg-red-700 text-white"
-                onClick={handleSubmit}
-                disabled={!state.email}
-              >
-                領取獎勵
-              </Button>
-            </div>
+          <div className="border-t border-green-100 pt-3">
+            <p className="text-sm text-green-600 flex items-center">
+              <Check className="h-4 w-4 mr-1" />
+              任務已完成！
+            </p>
           </div>
         </div>
       )}
-    </div>
+
+      {
+        isExpanded && !isCompleted && (
+          <div className="px-4 pb-4 pt-0">
+            <div className="border-t border-gray-100 pt-3 space-y-5">
+              <div className="space-y-3">
+                <p className="text-sm font-bold text-lion-accent">Step 1: 觀看影片</p>
+                <Button
+                  variant="teal"
+                  size="sm"
+                  className="w-full flex items-center justify-center gap-2 h-10 shadow-sm"
+                  onClick={() => window.open("https://gleam.io/st1s5/task", "_blank")}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  前往觀看影片
+                </Button>
+              </div>
+
+              <div className="pt-2 space-y-3">
+                <p className="text-sm font-bold text-lion-accent">Step 2: 領取獎勵</p>
+                <p className="text-xs text-gray-600">觀看完成後，請在此填寫 Email 並點擊驗證</p>
+                <div className="space-y-3">
+                  <Input
+                    placeholder="請輸入您的 Email"
+                    value={state.email}
+                    onChange={(e) => setState((prev) => ({ ...prev, email: e.target.value }))}
+                    className="bg-gray-50 border-gray-200"
+                  />
+                  <Button
+                    size="sm"
+                    className={`w-full ${activeQuotaFull ? 'bg-red-500 cursor-not-allowed opacity-70' : 'bg-lion-orange hover:bg-lion-red'} text-white font-bold h-10 shadow-md transform active:scale-95 transition-all`}
+                    onClick={handleSubmit}
+                    disabled={!state.email || activeQuotaFull}
+                  >
+                    {activeQuotaFull ? "名額已滿" : "驗證完成"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div >
   )
 }
 
-function ImeiBuyTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
+function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus }: ImeiTaskProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [state, setState] = useState({
     status: "idle",
     url: "",
-    platform: "instagram",
-    limit: 300,
-    currentCount: 1
+    platform: "instagram"
   })
 
+  // Synchronize internal state with prop for testing
+  const [localStatus, setLocalStatus] = useState<string | null>(null);
+  useEffect(() => { setLocalStatus(null); }, [debugStatus]);
+
+  const activeStatus = localStatus || (debugStatus !== "idle" ? debugStatus : state.status);
+  const activeQuotaFull = isQuotaFull;
+  const isCompleted = activeStatus === "completed" || completedTasks.includes("imei_buy")
+
   const reward = formatCryptoValue(0.00000549) + " WBTC"
-  const isCompleted = state.status === "completed"
 
   const handleSubmit = () => {
     setState((prev) => ({ ...prev, status: "pending" }))
+    setLocalStatus("pending")
     toast({
       title: "提交成功",
       description: "您的回報已收到，將於 5-7 個工作天內完成審核。",
@@ -732,6 +842,7 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
 
   const handleResubmit = () => {
     setState((prev) => ({ ...prev, status: "idle" }))
+    setLocalStatus("idle")
   }
 
   return (
@@ -761,13 +872,24 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
         </div>
       </div>
 
+      {isCompleted && (
+        <div className="px-4 pb-4 pt-0">
+          <div className="border-t border-green-100 pt-3">
+            <p className="text-sm text-green-600 flex items-center">
+              <Check className="h-4 w-4 mr-1" />
+              任務已完成！
+            </p>
+          </div>
+        </div>
+      )}
+
       {isExpanded && !isCompleted && (
         <div className="px-4 pb-4 pt-0">
           <div className="border-t border-gray-100 pt-3 space-y-4">
             <p className="text-sm text-gray-600 mb-2">購買義美商品合照並公開分享，回填貼文網址。</p>
             <p className="text-xs text-red-600 mb-3">(連結錯誤將視為無效，無法獲得獎勵，請確認後送出。)</p>
 
-            {state.status === 'idle' ? (
+            {activeStatus === 'idle' ? (
               <div className="space-y-3">
                 <div className="flex gap-2">
                   <select
@@ -790,21 +912,40 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
                 </div>
                 <Button
                   size="sm"
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  className={`w-full ${activeQuotaFull ? 'bg-red-500 cursor-not-allowed opacity-70' : 'bg-purple-600 hover:bg-purple-700'} text-white font-medium`}
                   onClick={handleSubmit}
-                  disabled={!state.url}
+                  disabled={!state.url || activeQuotaFull}
                 >
-                  提交驗證
+                  {activeQuotaFull ? "名額已滿" : "提交驗證"}
                 </Button>
+                {!activeQuotaFull && (
+                  <p className="text-xs text-orange-600 text-center mt-2">名額有限，提交後將進入審核排隊</p>
+                )}
+              </div>
+            ) : activeStatus === 'pending' ? (
+              <div className="bg-blue-50 text-blue-800 text-sm p-4 rounded-lg border border-blue-200 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                  <span className="font-bold">審核中 (預計 5-7 個工作天)</span>
+                </div>
+                <p className="text-xs text-blue-600">名額有限，提交後將進入審核排隊</p>
+                <div className="flex justify-end">
+                  <Button variant="outline" size="sm" onClick={handleResubmit} className="text-xs h-8 border-blue-200 text-blue-700 hover:bg-blue-100">
+                    重新提交
+                  </Button>
+                </div>
               </div>
             ) : (
-              <div className="bg-yellow-50 text-yellow-800 text-sm p-3 rounded-lg border border-yellow-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-4 w-4" />
-                  <span className="font-medium">審核中 (預計 5-7 個工作天)</span>
+              <div className="bg-red-50 text-red-800 text-sm p-4 rounded-lg border border-red-200 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="bg-red-500 rounded-full p-1">
+                    <Check className="h-3 w-3 text-white transform rotate-45" />
+                  </div>
+                  <span className="font-bold">未通過</span>
                 </div>
+                <p className="text-xs text-red-600">您的提交未符合活動規範。如有疑問可更新連結後重新提交。</p>
                 <div className="flex justify-end">
-                  <Button variant="ghost" size="sm" onClick={handleResubmit} className="text-xs h-7 text-yellow-700 hover:text-yellow-900 hover:bg-yellow-100">
+                  <Button variant="outline" size="sm" onClick={handleResubmit} className="text-xs h-8 border-red-200 text-red-700 hover:bg-red-100">
                     重新提交
                   </Button>
                 </div>
@@ -848,14 +989,34 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite }: ImeiTaskPro
         </div>
       </div>
 
+      {isCompleted && (
+        <div className="px-4 pb-4 pt-0">
+          <div className="border-t border-green-100 pt-3">
+            <p className="text-sm text-green-600 flex items-center">
+              <Check className="h-4 w-4 mr-1" />
+              任務已完成！
+            </p>
+          </div>
+        </div>
+      )}
+
       {isExpanded && !isCompleted && (
         <div className="px-4 pb-4 pt-0">
           <div className="border-t border-gray-100 pt-3 space-y-4">
-            <p className="text-sm text-gray-600 mb-3">請完成以下教學任務以了解如何連接錢包並獲得獎勵。</p>
-            <GleamWidget
-              href="https://gleam.io/UQT8z/uid"
-              title="新手必看：錢包連接與 UID 綁定教學"
-            />
+            <div className="space-y-3">
+              <p className="text-sm font-bold text-lion-accent">任務說明</p>
+              <Button
+                variant="teal"
+                size="sm"
+                className="w-full flex items-center justify-center gap-2 h-10 shadow-sm"
+                onClick={() => {
+                  window.open("https://gleam.io/UQT8z/uid", "_blank")
+                }}
+              >
+                <ExternalLink className="h-4 w-4" />
+                前往教學並完成任務
+              </Button>
+            </div>
           </div>
         </div>
       )}
