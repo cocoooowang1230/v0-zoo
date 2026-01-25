@@ -777,11 +777,18 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
                 <Button
                   variant="teal"
                   size="sm"
-                  className="w-full flex items-center justify-center gap-2 h-10 shadow-sm"
-                  onClick={() => window.open("https://gleam.io/st1s5/task", "_blank")}
+                  className="w-full h-10 shadow-sm"
+                  asChild
                 >
-                  <ExternalLink className="h-4 w-4" />
-                  前往觀看影片
+                  <a
+                    href="https://gleam.io/st1s5/task?openExternalBrowser=1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    前往觀看影片
+                  </a>
                 </Button>
               </div>
 
@@ -1008,13 +1015,18 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite }: ImeiTaskPro
               <Button
                 variant="teal"
                 size="sm"
-                className="w-full flex items-center justify-center gap-2 h-10 shadow-sm"
-                onClick={() => {
-                  window.open("https://gleam.io/UQT8z/uid", "_blank")
-                }}
+                className="w-full h-10 shadow-sm"
+                asChild
               >
-                <ExternalLink className="h-4 w-4" />
-                前往教學並完成任務
+                <a
+                  href="https://gleam.io/UQT8z/uid?openExternalBrowser=1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  前往教學並完成任務
+                </a>
               </Button>
             </div>
           </div>
