@@ -42,7 +42,7 @@ export default function Home() {
     ],
   })
   const [todaysClaimed, setTodaysClaimed] = useState(false)
-  const [totalRewards, setTotalRewards] = useState(0.00000037)
+  const [totalRewards, setTotalRewards] = useState(0.00000038)
   const [linkCopied, setLinkCopied] = useState(false)
   const [isWalletConnected, setIsWalletConnected] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
