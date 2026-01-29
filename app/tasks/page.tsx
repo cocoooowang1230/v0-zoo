@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 import { useState, useEffect, memo } from "react"
 import { Button } from "@/components/ui/button"
 import { MessageSquare, ChevronDown, ChevronUp, Check, ExternalLink, ShieldCheck, Wallet } from "lucide-react"
@@ -28,6 +28,19 @@ export default function TasksPage() {
   const [showPrerequisiteDialog, setShowPrerequisiteDialog] = useState(false)
   const [globalQuotaFull, setGlobalQuotaFull] = useState(false)
   const [debugStatus, setDebugStatus] = useState<"idle" | "pending" | "rejected" | "completed">("idle") // Status testing state
+  const [autoExpandZone, setAutoExpandZone] = useState(false)
+  const zoneTaskRef = React.useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("task") === "zone_guide") {
+      setAutoExpandZone(true)
+      // Small delay to ensure render is complete
+      setTimeout(() => {
+        zoneTaskRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 300)
+    }
+  }, [])
 
   useEffect(() => {
     // Generate referral link - you can customize this logic
@@ -144,10 +157,13 @@ export default function TasksPage() {
       <div className="flex-1 container max-w-md mx-auto px-4 pt-4 space-y-4 pb-4">
         {/* Task Cards */}
         <div className="space-y-4">
-          <ZoneWalletGuideTask
-            completedTasks={completedTasks}
-            onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
-          />
+          <div ref={zoneTaskRef}>
+            <ZoneWalletGuideTask
+              completedTasks={completedTasks}
+              onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
+              forceExpand={autoExpandZone}
+            />
+          </div>
 
           <TaskCard
             id="identity"
@@ -496,6 +512,7 @@ interface ImeiTaskProps {
   onShowPrerequisite: () => void
   isQuotaFull?: boolean
   debugStatus?: "idle" | "pending" | "rejected" | "completed"
+  forceExpand?: boolean
 }
 
 function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus }: ImeiTaskProps) {
@@ -965,8 +982,15 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, 
   )
 }
 
-function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite }: ImeiTaskProps) {
+function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }: ImeiTaskProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+
+  useEffect(() => {
+    if (forceExpand) {
+      setIsExpanded(true)
+    }
+  }, [forceExpand])
+
   const isCompleted = completedTasks.includes("zone_guide")
 
   return (
@@ -985,7 +1009,7 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite }: ImeiTaskPro
           {isCompleted ? <Check className="h-5 w-5 text-white" /> : <Wallet className="h-5 w-5 text-white" />}
         </div>
         <div className="flex-1">
-          <h3 className="font-bold text-lion-accent">ZONE wallet 新手必看</h3>
+          <h3 className="font-bold text-lion-accent">ZONE Wallet新手任務</h3>
           <p className="text-sm text-gray-600">錢包連接與 UID 綁定教學</p>
         </div>
         <div className="flex flex-col items-end">
@@ -1011,7 +1035,29 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite }: ImeiTaskPro
         <div className="px-4 pb-4 pt-0">
           <div className="border-t border-gray-100 pt-3 space-y-4">
             <div className="space-y-3">
-              <p className="text-sm font-bold text-lion-accent">任務說明</p>
+              <p className="text-sm font-bold text-lion-accent">完成以下步驟以獲得獎勵：</p>
+
+              <div className="space-y-2 bg-lion-face-light p-3 rounded-lg border border-lion-face">
+                <div className="flex items-start gap-2">
+                  <div className="bg-lion-orange text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                    1
+                  </div>
+                  <p className="text-sm text-gray-700">觀看新手教學影片</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="bg-lion-orange text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                    2
+                  </div>
+                  <p className="text-sm text-gray-700">在 Instagram 上關注 @zonewallet</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="bg-lion-orange text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                    3
+                  </div>
+                  <p className="text-sm text-gray-700">加入 LINE 社群</p>
+                </div>
+              </div>
+
               <Button
                 variant="teal"
                 size="sm"

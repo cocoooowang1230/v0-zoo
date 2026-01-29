@@ -94,12 +94,12 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances }: Withdrawa
 
         if (currency === "USDT") {
             if (numAmount < MIN_WITHDRAWAL_USDT) {
-                setError(`出金金額需至少 ${MIN_WITHDRAWAL_USDT} USDT`)
+                setError(`最低提領金額 ${MIN_WITHDRAWAL_USDT} USDT`)
                 return false
             }
         } else {
             if (numAmount < MIN_WITHDRAWAL_WBTC) {
-                setError(`出金金額需至少 ${MIN_WITHDRAWAL_WBTC} WBTC`)
+                setError(`最低提領金額 ${MIN_WITHDRAWAL_WBTC} WBTC`)
                 return false
             }
         }
@@ -136,15 +136,22 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances }: Withdrawa
                         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">
                             <Check className="h-8 w-8" />
                         </div>
-                        <h2 className="text-xl font-bold text-gray-900">出金成功！</h2>
+                        <h2 className="text-xl font-bold text-gray-900">提領成功！</h2>
                         <p className="text-gray-600">
-                            約 {calculatedTwd.toLocaleString()} TWD 已轉入你的錢包
+                            {amount} {currency} 已轉入你的 ZONE Wallet
                         </p>
                         <Button
                             className="w-full mt-4 bg-lion-orange hover:bg-lion-red text-white"
                             onClick={() => onOpenChange(false)}
                         >
                             完成
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="w-full mt-2"
+                            onClick={() => window.open('https://www.zonewallet.io', '_blank')}
+                        >
+                            前往 ZONE Wallet App 查看
                         </Button>
                     </div>
                 </AlertDialogContent>
@@ -161,7 +168,7 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances }: Withdrawa
                     </AlertDialogHeader>
                     <div className="py-4 space-y-4">
                         <p className="text-gray-600">
-                            確認提取 <span className="font-bold text-black">{amount} {currency}</span> 至你的 ZoneWallet 嗎？
+                            確認提取 <span className="font-bold text-black">{amount} {currency}</span> 至你的 ZONE Wallet 嗎？
                         </p>
 
                     </div>

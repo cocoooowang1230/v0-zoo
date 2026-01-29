@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 import { Loader2, Phone, Mail, CheckCircle2, AlertCircle } from "lucide-react"
 
 interface WalletBindingModalProps {
@@ -110,8 +111,10 @@ export function WalletBindingModal({
         // Simulate API: Verify Code and Bind
         setTimeout(() => {
             setIsLoading(false)
-            // Mock success
-            if (otp) {
+            // Mock success/failure
+            if (otp === "999999") {
+                setError("驗證碼不正確，請重新輸入")
+            } else {
                 handleSuccess()
             }
         }, 1500)
@@ -141,14 +144,14 @@ export function WalletBindingModal({
                                 驗證你的帳號
                             </AlertDialogTitle>
                             <AlertDialogDescription className="text-center text-gray-500">
-                                為確保是本人操作，請輸入你的 ZONE UID
+                                為確保是本人操作，請輸入你的 ZONE Wallet UID
                             </AlertDialogDescription>
                         </AlertDialogHeader>
 
                         <div className="py-4 px-2 space-y-4">
                             {/* Tutorial Banner */}
                             <Link
-                                href="/tasks"
+                                href="/tasks?task=zone_guide"
                                 onClick={() => onOpenChange(false)}
                                 className="block overflow-hidden rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow active:scale-95 duration-200"
                             >
@@ -169,7 +172,7 @@ export function WalletBindingModal({
                             </Link>
 
                             <div className="space-y-2">
-                                <p className="text-sm font-medium text-gray-700 ml-1">請輸入你的 ZONE UID</p>
+                                <p className="text-sm font-medium text-gray-700 ml-1">請輸入你的 ZONE Wallet UID</p>
                                 <Input
                                     placeholder="請輸入 UID"
                                     value={uid}
@@ -275,15 +278,18 @@ export function WalletBindingModal({
                             <div className="flex justify-center">
                                 <Input
                                     placeholder="_ _ _ _ _ _"
-                                    value={otp}
                                     maxLength={6}
+                                    value={otp}
                                     onChange={(e) => {
                                         const value = e.target.value.replace(/[^0-9]/g, '')
                                         setOtp(value)
                                         setError("")
                                     }}
-                                    className="text-center text-2xl tracking-[0.5em] h-14 w-full max-w-[240px] border-gray-200 focus:border-black transition-all rounded-xl font-mono"
-                                    style={{ letterSpacing: '0.5em' }}
+                                    className={cn(
+                                        "text-center text-2xl tracking-[0.3em] h-14 w-full max-w-[280px] transition-all rounded-xl font-mono",
+                                        error ? "border-red-500 bg-red-50 focus:border-red-500" : "border-gray-200 focus:border-black"
+                                    )}
+                                    style={{ letterSpacing: '0.3em' }}
                                 />
                             </div>
 

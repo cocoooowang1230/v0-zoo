@@ -32,13 +32,13 @@ export default function Home() {
     currentDay: 0,
     lastClaimed: null as string | null,
     days: [
-      { reward: "+1", completed: false },
-      { reward: "+1", completed: false },
-      { reward: "+2", completed: false },
-      { reward: "+2", completed: false },
-      { reward: "+3", completed: false },
-      { reward: "+3", completed: false },
-      { reward: "+10 🎁", completed: false },
+      { reward: "+0.00000001", completed: false },
+      { reward: "+0.00000001", completed: false },
+      { reward: "+0.00000002", completed: false },
+      { reward: "+0.00000002", completed: false },
+      { reward: "+0.00000003", completed: false },
+      { reward: "+0.00000003", completed: false },
+      { reward: "+0.00000010 🎁", completed: false },
     ],
   })
   const [todaysClaimed, setTodaysClaimed] = useState(false)
@@ -48,6 +48,7 @@ export default function Home() {
   const [isConnecting, setIsConnecting] = useState(false)
   const [showWbtcInTwd, setShowWbtcInTwd] = useState(false)
   const [showUsdtInTwd, setShowUsdtInTwd] = useState(false)
+  const [debugBalance, setDebugBalance] = useState(false)
   // Withdrawal/Binding State
   const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false)
   const [exchangeUid, setExchangeUid] = useState("")
@@ -247,16 +248,39 @@ export default function Home() {
         </div>
         <p className="mt-1 text-sm">完成任務獲取獎勵</p>
 
-        {/* Debug Reset Button */}
-        <button
-          onClick={() => {
-            localStorage.clear();
-            window.location.reload();
-          }}
-          className="absolute right-2 top-2 bg-white/20 hover:bg-white/30 text-[10px] px-2 py-1 rounded border border-white/40 transition-colors"
-        >
-          🔧 重置測試
-        </button>
+        {/* Debug Controls */}
+        <div className="absolute right-2 top-2 flex flex-col gap-1 items-end z-10">
+          <button
+            onClick={() => {
+              localStorage.clear()
+              window.location.reload()
+            }}
+            className="bg-white/20 hover:bg-white/30 text-[10px] px-2 py-1 rounded border border-white/40 transition-colors whitespace-nowrap"
+          >
+            🔧 重置測試
+          </button>
+          <button
+            onClick={() => {
+              const newState = !debugBalance
+              setDebugBalance(newState)
+              if (newState && !isUidBound) {
+                setIsUidBound(true)
+                setExchangeUid("TEST_UID_888")
+                toast({ title: "已開啟模擬模式", description: "餘額已增加，且已模擬綁定 UID" })
+              } else if (!newState) {
+                toast({ title: "已關閉模擬模式", description: "恢復正常餘額" })
+              }
+            }}
+            className={cn(
+              "text-[10px] px-2 py-1 rounded border transition-colors whitespace-nowrap",
+              debugBalance
+                ? "bg-green-500 text-white border-green-400"
+                : "bg-white/20 hover:bg-white/30 border-white/40"
+            )}
+          >
+            💰 模擬提現
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 container max-w-md mx-auto p-4 space-y-4">
@@ -285,8 +309,8 @@ export default function Home() {
               </div>
               <p className="text-xl font-bold text-green-600">
                 {showUsdtInTwd
-                  ? `NT$ ${Math.round(0 * 31.3).toLocaleString()}`
-                  : "x 0"}
+                  ? `NT$ ${Math.round((debugBalance ? 15 : 0) * 31.3).toLocaleString()}`
+                  : `x ${debugBalance ? 15 : 0}`}
               </p>
               {showUsdtInTwd && <p className="text-xs text-gray-500 mt-1">≈ 1 USDT = NT$ 31.3</p>}
             </div>
@@ -305,8 +329,8 @@ export default function Home() {
               </div>
               <p className="text-xl font-bold text-orange-500">
                 {showWbtcInTwd
-                  ? `NT$ ${Math.round(0.00000037 * 2850000).toLocaleString()}`
-                  : `x ${formatCryptoValue(0.00000037)}`}
+                  ? `NT$ ${Math.round(totalRewards * 2850000).toLocaleString()}`
+                  : `x ${formatCryptoValue(totalRewards)}`}
               </p>
               {showWbtcInTwd && <p className="text-xs text-gray-500 mt-1">≈ 1 BTC = NT$ 2,850,000</p>}
             </div>
@@ -469,8 +493,8 @@ export default function Home() {
         onOpenChange={setIsWithdrawalModalOpen}
         uid={exchangeUid}
         balances={{
-          USDT: 0,
-          WBTC: totalRewards // Using the accumulated rewards
+          USDT: debugBalance ? 15 : 0,
+          WBTC: totalRewards
         }}
       />
 
