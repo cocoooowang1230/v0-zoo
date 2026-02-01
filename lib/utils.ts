@@ -28,3 +28,19 @@ export function formatCryptoValue(value: number): string {
 
   return str
 }
+
+export function maskEmail(email: string): string {
+  const [localPart, domain] = email.split("@")
+  if (!localPart || !domain) return email
+
+  let maskedLocal = ""
+  if (localPart.length >= 4) {
+    maskedLocal = `${localPart.slice(0, 2)}**${localPart.slice(-1)}`
+  } else if (localPart.length >= 2) {
+    maskedLocal = `${localPart[0]}**`
+  } else {
+    maskedLocal = `${localPart}**` // Fallback for single char if any
+  }
+
+  return `${maskedLocal}@${domain}`
+}

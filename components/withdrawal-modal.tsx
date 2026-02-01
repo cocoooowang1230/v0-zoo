@@ -24,13 +24,14 @@ interface WithdrawalModalProps {
     }
 }
 
-export function WithdrawalModal({ open, onOpenChange, uid, balances }: WithdrawalModalProps) {
+export function WithdrawalModal({ open, onOpenChange, uid, balances, hasKyc = false }: WithdrawalModalProps & { hasKyc?: boolean }) {
     const [currency, setCurrency] = useState<"USDT" | "WBTC">("USDT")
     const [amount, setAmount] = useState("")
     const [targetCurrency, setTargetCurrency] = useState<"TWD" | "Other">("TWD")
     const [error, setError] = useState("")
     const [success, setSuccess] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
+    const [kycError, setKycError] = useState(false)
 
     // Exchange Rates
     const RATES = {
@@ -49,6 +50,7 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances }: Withdrawa
             setError("")
             setSuccess(false)
             setShowConfirm(false)
+            setKycError(false)
         }
     }, [open])
 
@@ -114,6 +116,12 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances }: Withdrawa
     }
 
     const handleFinalConfirm = () => {
+        if (!hasKyc) {
+            setKycError(true)
+            setShowConfirm(false)
+            return
+        }
+
         // Simulate API call: ZOO sends UID, Currency, Amount to ZONE
         console.log(`Sending withdrawal request: UID=${uid}, Currency=${currency}, Amount=${amount}`)
 
@@ -127,6 +135,40 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances }: Withdrawa
     const calculatedTwd = amount && !Number.isNaN(Number(amount))
         ? getEquivalentTwd(Number(amount), currency)
         : 0
+
+    if (kycError) {
+        return (
+            <AlertDialog open={open} onOpenChange={onOpenChange}>
+                <AlertDialogContent className="bg-white max-w-sm rounded-xl">
+                    <div className="flex flex-col items-center justify-center p-6 text-center space-y-4">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-600 mb-2">
+                            <AlertCircle className="h-8 w-8" />
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900">提現失敗</h2>
+                        <p className="text-gray-600">
+                            請前往 ZONE Wallet App 的「錢包」完成 KYC 身分驗證
+                        </p>
+                        <Button
+                            variant="outline"
+                            className="w-full mt-4"
+                            onClick={() => window.open('https://www.zonewallet.io', '_blank')}
+                        >
+                            前往 ZONE Wallet App
+                        </Button>
+                        <Button
+                            className="w-full bg-lion-orange hover:bg-lion-red text-white"
+                            onClick={() => {
+                                setKycError(false)
+                                setShowConfirm(false)
+                            }}
+                        >
+                            返回
+                        </Button>
+                    </div>
+                </AlertDialogContent>
+            </AlertDialog>
+        )
+    }
 
     if (success) {
         return (

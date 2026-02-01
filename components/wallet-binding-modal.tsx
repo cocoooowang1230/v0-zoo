@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import { cn, maskEmail } from "@/lib/utils"
 import { Loader2, Phone, Mail, CheckCircle2, AlertCircle } from "lucide-react"
 
 interface WalletBindingModalProps {
@@ -79,8 +79,8 @@ export function WalletBindingModal({
             setIsLoading(false)
             // Mock response
             setUserInfo({
-                phone: "09xxxxx845",
-                email: "aaron.huxx@gmail.com",
+                phone: "+886 ****5678",
+                email: maskEmail("aaron.huxx@gmail.com"),
             })
             setStep(2)
         }, 1000)
@@ -93,7 +93,7 @@ export function WalletBindingModal({
         // Simulate API: Notify ZONE to send SMS
         setTimeout(() => {
             setIsLoading(false)
-            setCountdown(60)
+            setCountdown(180)
             setStep(3)
         }, 1000)
     }
@@ -128,7 +128,7 @@ export function WalletBindingModal({
     // Resend OTP
     const handleResendOtp = () => {
         if (countdown > 0) return
-        setCountdown(60)
+        setCountdown(180)
         // Here you would trigger the API to resend
     }
 

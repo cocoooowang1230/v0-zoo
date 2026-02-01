@@ -55,6 +55,7 @@ export default function Home() {
 
   const [isUidBound, setIsUidBound] = useState(false)
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false)
+  const [hasKyc, setHasKyc] = useState(false)
 
   const referralLink = "https://bitbee.app/register?ref=Kkwf5b"
 
@@ -280,6 +281,20 @@ export default function Home() {
           >
             💰 模擬提現
           </button>
+          <button
+            onClick={() => {
+              setHasKyc(!hasKyc)
+              toast({ title: hasKyc ? "已關閉 KYC" : "已開啟 KYC", description: hasKyc ? "模擬未通過身份驗證" : "模擬已通過身份驗證" })
+            }}
+            className={cn(
+              "text-[10px] px-2 py-1 rounded border transition-colors whitespace-nowrap",
+              hasKyc
+                ? "bg-blue-500 text-white border-blue-400"
+                : "bg-white/20 hover:bg-white/30 border-white/40"
+            )}
+          >
+            🆔 KYC: {hasKyc ? "ON" : "OFF"}
+          </button>
         </div>
       </header>
 
@@ -496,6 +511,7 @@ export default function Home() {
           USDT: debugBalance ? 15 : 0,
           WBTC: totalRewards
         }}
+        hasKyc={hasKyc}
       />
 
       {/* Withdrawal / Binding Dialog */}
