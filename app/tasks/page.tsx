@@ -1035,6 +1035,13 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
         <div className="px-4 pb-4 pt-0">
           <div className="border-t border-gray-100 pt-3 space-y-4">
             <div className="space-y-3">
+              {/* Event Banner */}
+              <div className="mb-4 rounded-lg overflow-hidden border border-gray-200">
+                <div className="aspect-[1080/360] bg-gray-200 w-full flex items-center justify-center text-gray-400">
+                  <span className="text-sm">ZONE Wallet Banner (1080 x 360)</span>
+                </div>
+              </div>
+
               <p className="text-sm font-bold text-lion-accent">完成以下步驟以獲得獎勵：</p>
 
               <div className="space-y-2 bg-lion-face-light p-3 rounded-lg border border-lion-face">
