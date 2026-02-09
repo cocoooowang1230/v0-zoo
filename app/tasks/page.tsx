@@ -984,6 +984,10 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, 
 
 function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }: ImeiTaskProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [state, setState] = useState({
+    status: "idle",
+    email: ""
+  })
 
   useEffect(() => {
     if (forceExpand) {
@@ -991,7 +995,18 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
     }
   }, [forceExpand])
 
-  const isCompleted = completedTasks.includes("zone_guide")
+  const isCompleted = state.status === "completed" || completedTasks.includes("zone_guide")
+
+  const reward = formatCryptoValue(0.000018) + " WBTC"
+
+  const handleSubmit = () => {
+    if (!state.email) {
+      toast({ title: "請填寫 Email", description: "您需要填寫 Email 才能領取獎勵", variant: "destructive" })
+      return
+    }
+    setState((prev) => ({ ...prev, status: "completed" }))
+    toast({ title: "任務完成!", description: `您獲得了 +${reward}` })
+  }
 
   return (
     <div className={`bg-white rounded-xl border transition-all duration-200 overflow-hidden ${isCompleted ? "border-green-300 bg-green-50" : isExpanded ? "border-lion-orange shadow-lion" : "border-lion-face-dark shadow-sm hover:shadow-lion"}`}>
@@ -1014,7 +1029,7 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
         </div>
         <div className="flex flex-col items-end">
           <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-sm border border-lion-face-dark mb-1">
-            +5 USDT
+            +{reward}
           </div>
           {!isCompleted && <div className="text-gray-400">{isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>}
         </div>
@@ -1033,7 +1048,7 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
 
       {isExpanded && !isCompleted && (
         <div className="px-4 pb-4 pt-0">
-          <div className="border-t border-gray-100 pt-3 space-y-4">
+          <div className="border-t border-gray-100 pt-3 space-y-5">
             <div className="space-y-3">
               {/* Event Banner */}
               <div className="mb-4 rounded-lg overflow-hidden border border-gray-200">
@@ -1042,7 +1057,7 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
                 </div>
               </div>
 
-              <p className="text-sm font-bold text-lion-accent">完成以下步驟以獲得獎勵：</p>
+              <p className="text-sm font-bold text-lion-accent">Step 1: 完成任務</p>
 
               <div className="space-y-2 bg-lion-face-light p-3 rounded-lg border border-lion-face">
                 <div className="flex items-start gap-2">
@@ -1081,6 +1096,27 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
                   前往教學並完成任務
                 </a>
               </Button>
+            </div>
+
+            <div className="pt-2 space-y-3">
+              <p className="text-sm font-bold text-lion-accent">Step 2: 領取獎勵</p>
+              <p className="text-xs text-gray-600">任務完成後，請在此填寫 Email 並點擊驗證</p>
+              <div className="space-y-3">
+                <Input
+                  placeholder="請輸入您的 Email"
+                  value={state.email}
+                  onChange={(e) => setState((prev) => ({ ...prev, email: e.target.value }))}
+                  className="bg-gray-50 border-gray-200"
+                />
+                <Button
+                  size="sm"
+                  className="w-full bg-lion-orange hover:bg-lion-red text-white font-bold h-10 shadow-md transform active:scale-95 transition-all"
+                  onClick={handleSubmit}
+                  disabled={!state.email}
+                >
+                  驗證完成
+                </Button>
+              </div>
             </div>
           </div>
         </div>
