@@ -531,7 +531,7 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
   const activeQuotaFull = isQuotaFull;
   const isCompleted = activeStatus === "completed" || completedTasks.includes("imei_share")
 
-  const reward = formatCryptoValue(0.00000109) + " WBTC"
+  const reward = formatCryptoValue(0.00000109) + " BTC"
 
   const handleSubmit = () => {
     // Simulate API call
@@ -718,6 +718,7 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
 
 function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus }: ImeiTaskProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [showErrorDialog, setShowErrorDialog] = useState(false)
   const [state, setState] = useState({
     status: "idle",
     email: ""
@@ -731,7 +732,7 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
   const activeStatus = localStatus || (debugStatus !== "idle" ? debugStatus : state.status);
   const isCompleted = activeStatus === "completed" || completedTasks.includes("imei_video")
 
-  const reward = formatCryptoValue(0.00000109) + " WBTC"
+  const reward = formatCryptoValue(0.00000109) + " BTC"
 
   const handleSubmit = () => {
     if (activeQuotaFull) {
@@ -740,6 +741,11 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
     }
     if (!state.email) {
       toast({ title: "請填寫 Email", description: "您需要填寫 Email 才能領取獎勵", variant: "destructive" })
+      return
+    }
+    // Simulate email check
+    if (state.email.toLowerCase().includes("error")) {
+      setShowErrorDialog(true)
       return
     }
     setState((prev) => ({ ...prev, status: "completed" }))
@@ -833,6 +839,28 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
           </div>
         )
       }
+
+      <AlertDialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <AlertDialogContent className="bg-white max-w-sm rounded-xl">
+          <AlertDialogHeader>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-2">
+              <ShieldCheck className="h-6 w-6 text-red-600" />
+            </div>
+            <AlertDialogTitle className="text-xl font-bold text-center">驗證失敗</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-gray-600 pt-2">
+              未查詢到此 Email 紀錄，請確認您是否已完成觀看影片並使用正確的 Email。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              className="w-full bg-lion-orange hover:bg-lion-red text-white font-bold"
+              onClick={() => setShowErrorDialog(false)}
+            >
+              重新輸入
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div >
   )
 }
@@ -853,7 +881,7 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, 
   const activeQuotaFull = isQuotaFull;
   const isCompleted = activeStatus === "completed" || completedTasks.includes("imei_buy")
 
-  const reward = formatCryptoValue(0.00000549) + " WBTC"
+  const reward = formatCryptoValue(0.00000549) + " BTC"
 
   const handleSubmit = () => {
     setState((prev) => ({ ...prev, status: "pending" }))
@@ -997,7 +1025,7 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
 
   const isCompleted = state.status === "completed" || completedTasks.includes("zone_guide")
 
-  const reward = formatCryptoValue(0.000018) + " WBTC"
+  const reward = formatCryptoValue(0.000018) + " BTC"
 
   const handleSubmit = () => {
     if (!state.email) {

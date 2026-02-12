@@ -39,7 +39,7 @@ export default function LiffPage() {
     setDailyRewardClaimed(true)
     toast({
       title: "Reward claimed!",
-      description: "You've received +0.0000037 WBTC",
+      description: "You've received +0.0000037 BTC",
     })
   }
 
@@ -112,13 +112,12 @@ export default function LiffPage() {
               ].map((item, index) => (
                 <div key={index} className="flex flex-col items-center">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium ${
-                      item.active
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium ${item.active
                         ? "bg-gradient-to-br from-lion-orange to-lion-red"
                         : item.special
                           ? "bg-gradient-to-br from-lion-teal to-lion-teal-dark"
                           : "bg-gradient-to-br from-lion-orange-light to-lion-red-light opacity-70"
-                    }`}
+                      }`}
                   >
                     {item.special ? "🎁" : item.day}
                   </div>

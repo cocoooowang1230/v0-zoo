@@ -15,7 +15,7 @@ export default function RewardsPage() {
     { id: 2, type: "加入社區", token: "ZOO", amount: 3, timestamp: "2025-05-10 18:22" },
     { id: 3, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-05-10 09:15" },
     { id: 4, type: "推薦朋友", token: "ZOO", amount: 10, timestamp: "2025-05-09 14:37" },
-    { id: 5, type: "加密貨幣測驗", token: "WBTC", amount: 0.0001, timestamp: "2025-05-08 20:11" },
+    { id: 5, type: "加密貨幣測驗", token: "BTC", amount: 0.0001, timestamp: "2025-05-08 20:11" },
     { id: 6, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-05-08 10:05" },
     { id: 7, type: "社交媒體分享", token: "ZOO", amount: 5, timestamp: "2025-05-07 16:48" },
     { id: 8, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-05-07 08:30" },
@@ -23,7 +23,7 @@ export default function RewardsPage() {
     { id: 10, type: "加入社區", token: "ZOO", amount: 3, timestamp: "2025-05-05 14:22" },
     { id: 11, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-05-05 08:45" },
     { id: 12, type: "推薦朋友", token: "ZOO", amount: 10, timestamp: "2025-05-04 16:37" },
-    { id: 13, type: "加密貨幣測驗", token: "WBTC", amount: 0.0001, timestamp: "2025-05-03 11:11" },
+    { id: 13, type: "加密貨幣測驗", token: "BTC", amount: 0.0001, timestamp: "2025-05-03 11:11" },
     { id: 14, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-05-03 09:05" },
     { id: 15, type: "社交媒體分享", token: "ZOO", amount: 5, timestamp: "2025-05-02 15:48" },
     { id: 16, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-05-02 08:30" },
@@ -31,7 +31,7 @@ export default function RewardsPage() {
     { id: 18, type: "加入社區", token: "ZOO", amount: 3, timestamp: "2025-04-30 17:22" },
     { id: 19, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-04-30 08:15" },
     { id: 20, type: "推薦朋友", token: "ZOO", amount: 10, timestamp: "2025-04-29 13:37" },
-    { id: 21, type: "加密貨幣測驗", token: "WBTC", amount: 0.0001, timestamp: "2025-04-28 19:11" },
+    { id: 21, type: "加密貨幣測驗", token: "BTC", amount: 0.0001, timestamp: "2025-04-28 19:11" },
     { id: 22, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-04-28 09:05" },
   ]
 
@@ -67,7 +67,7 @@ export default function RewardsPage() {
         return "/images/kaia-token.png"
       case "ZOO":
         return "/images/zoo-token.png"
-      case "WBTC":
+      case "BTC":
         return "/images/wbtc-token.png"
       default:
         return "/images/kaia-token.png"
@@ -81,7 +81,7 @@ export default function RewardsPage() {
         return "text-lion-orange"
       case "ZOO":
         return "text-lion-teal"
-      case "WBTC":
+      case "BTC":
         return "text-orange-500"
       default:
         return "text-lion-orange"

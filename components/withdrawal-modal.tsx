@@ -20,12 +20,12 @@ interface WithdrawalModalProps {
     uid: string
     balances: {
         USDT: number
-        WBTC: number
+        BTC: number
     }
 }
 
 export function WithdrawalModal({ open, onOpenChange, uid, balances, hasKyc = false }: WithdrawalModalProps & { hasKyc?: boolean }) {
-    const [currency, setCurrency] = useState<"USDT" | "WBTC">("USDT")
+    const [currency, setCurrency] = useState<"USDT" | "BTC">("USDT")
     const [amount, setAmount] = useState("")
     const [targetCurrency, setTargetCurrency] = useState<"TWD" | "Other">("TWD")
     const [error, setError] = useState("")
@@ -36,12 +36,11 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances, hasKyc = fa
     // Exchange Rates
     const RATES = {
         USDT_TO_TWD: 31.3,
-        WBTC_TO_TWD: 2850000,
-        WBTC_TO_USDT: 91054, // Approx 2,850,000 / 31.3
+        BTC_TO_TWD: 2850000,
+        BTC_TO_USDT: 91054, // Approx 2,850,000 / 31.3
     }
 
-    const MIN_WITHDRAWAL_USDT = 10
-    const MIN_WITHDRAWAL_WBTC = 0.0001
+
 
     // Reset state when opening
     useEffect(() => {
@@ -58,14 +57,14 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances, hasKyc = fa
         return balances[currency]
     }
 
-    const getEquivalentTwd = (val: number, curr: "USDT" | "WBTC") => {
-        const rate = curr === "USDT" ? RATES.USDT_TO_TWD : RATES.WBTC_TO_TWD
+    const getEquivalentTwd = (val: number, curr: "USDT" | "BTC") => {
+        const rate = curr === "USDT" ? RATES.USDT_TO_TWD : RATES.BTC_TO_TWD
         return Math.floor(val * rate)
     }
 
-    const getEquivalentUsdtValue = (val: number, curr: "USDT" | "WBTC") => {
+    const getEquivalentUsdtValue = (val: number, curr: "USDT" | "BTC") => {
         if (curr === "USDT") return val
-        return val * RATES.WBTC_TO_USDT
+        return val * RATES.BTC_TO_USDT
     }
 
     const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,17 +93,7 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances, hasKyc = fa
             return false
         }
 
-        if (currency === "USDT") {
-            if (numAmount < MIN_WITHDRAWAL_USDT) {
-                setError(`最低提領金額 ${MIN_WITHDRAWAL_USDT} USDT`)
-                return false
-            }
-        } else {
-            if (numAmount < MIN_WITHDRAWAL_WBTC) {
-                setError(`最低提領金額 ${MIN_WITHDRAWAL_WBTC} WBTC`)
-                return false
-            }
-        }
+
 
         return true
     }
@@ -242,10 +231,10 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances, hasKyc = fa
                                 <select
                                     className="rounded-l-md border border-r-0 h-12 pl-3 pr-8 bg-gray-50 text-sm focus:ring-2 focus:ring-lion-orange focus:outline-none appearance-none font-medium w-[100px]"
                                     value={currency}
-                                    onChange={(e) => setCurrency(e.target.value as "USDT" | "WBTC")}
+                                    onChange={(e) => setCurrency(e.target.value as "USDT" | "BTC")}
                                 >
                                     <option value="USDT">USDT</option>
-                                    <option value="WBTC">WBTC</option>
+                                    <option value="BTC">BTC</option>
                                 </select>
                                 <div className="absolute right-2 top-3.5 pointer-events-none text-gray-400 text-xs">
                                     ▼
@@ -261,13 +250,11 @@ export function WithdrawalModal({ open, onOpenChange, uid, balances, hasKyc = fa
 
                         <div className="flex justify-between items-center px-1">
                             <span className="text-xs text-gray-500">
-                                可用餘額: {currency === "USDT" ? formatCryptoValue(balances.USDT) : formatCryptoValue(balances.WBTC)} {currency}
+                                可用餘額: {currency === "USDT" ? formatCryptoValue(balances.USDT) : formatCryptoValue(balances.BTC)} {currency}
                             </span>
                             {error ? (
                                 <span className="text-xs text-red-500">{error}</span>
-                            ) : (
-                                <span className="text-xs text-gray-400">最低: {currency === "USDT" ? `${MIN_WITHDRAWAL_USDT} USDT` : `${MIN_WITHDRAWAL_WBTC} WBTC`}</span>
-                            )}
+                            ) : null}
                         </div>
                     </div>
 

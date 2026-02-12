@@ -46,7 +46,7 @@ export default function Home() {
   const [linkCopied, setLinkCopied] = useState(false)
   const [isWalletConnected, setIsWalletConnected] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
-  const [showWbtcInTwd, setShowWbtcInTwd] = useState(false)
+  const [showBtcInTwd, setShowBtcInTwd] = useState(false)
   const [showUsdtInTwd, setShowUsdtInTwd] = useState(false)
   const [debugBalance, setDebugBalance] = useState(false)
   // Withdrawal/Binding State
@@ -56,6 +56,11 @@ export default function Home() {
   const [isUidBound, setIsUidBound] = useState(false)
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false)
   const [hasKyc, setHasKyc] = useState(false)
+
+  // Date Check Simulation
+  // Default to true if current date is before 2026-03-28
+  const [simulateDateBefore, setSimulateDateBefore] = useState(() => new Date() < new Date('2026-03-28'))
+  const [showPreWithdrawalAlert, setShowPreWithdrawalAlert] = useState(false)
 
   const referralLink = "https://bitbee.app/register?ref=Kkwf5b"
 
@@ -140,7 +145,7 @@ export default function Home() {
     // Show toast notification
     toast({
       title: "獎勵已領取!",
-      description: `您獲得了 +${rewardAmount} WBTC`,
+      description: `您獲得了 +${rewardAmount} BTC`,
     })
   }
 
@@ -295,6 +300,24 @@ export default function Home() {
           >
             🆔 KYC: {hasKyc ? "ON" : "OFF"}
           </button>
+          <button
+            onClick={() => {
+              const newDate = simulateDateBefore ? new Date("2026-04-01") : new Date("2026-02-01")
+              setSimulateDateBefore(!simulateDateBefore)
+              toast({
+                title: !simulateDateBefore ? "模擬時間: 3/28 前" : "模擬時間: 3/28 後",
+                description: !simulateDateBefore ? "現在是 2月" : "現在是 4月"
+              })
+            }}
+            className={cn(
+              "text-[10px] px-2 py-1 rounded border transition-colors whitespace-nowrap",
+              simulateDateBefore
+                ? "bg-yellow-500 text-white border-yellow-400"
+                : "bg-green-500 text-white border-green-400"
+            )}
+          >
+            📅 時間: {simulateDateBefore ? "< 3/28" : "> 3/28"}
+          </button>
         </div>
       </header>
 
@@ -332,22 +355,22 @@ export default function Home() {
 
             <div
               className="bg-lion-face p-3 rounded-lg text-center border border-lion-face-dark cursor-pointer transition-colors hover:bg-lion-face-dark/20"
-              onClick={() => setShowWbtcInTwd(!showWbtcInTwd)}
+              onClick={() => setShowBtcInTwd(!showBtcInTwd)}
               role="button"
               tabIndex={0}
             >
               <div className="flex items-center justify-center mb-1">
                 <div className="w-8 h-8 rounded-full overflow-hidden">
-                  <Image src="/images/wbtc-token.png" alt="WBTC Token" width={32} height={32} />
+                  <Image src="/images/wbtc-token.png" alt="BTC Token" width={32} height={32} />
                 </div>
-                <p className="text-sm font-medium text-gray-600 ml-1">WBTC</p>
+                <p className="text-sm font-medium text-gray-600 ml-1">BTC</p>
               </div>
               <p className="text-xl font-bold text-orange-500">
-                {showWbtcInTwd
+                {showBtcInTwd
                   ? `NT$ ${Math.round(totalRewards * 2850000).toLocaleString()}`
                   : `x ${formatCryptoValue(totalRewards)}`}
               </p>
-              {showWbtcInTwd && <p className="text-xs text-gray-500 mt-1">≈ 1 BTC = NT$ 2,850,000</p>}
+              {showBtcInTwd && <p className="text-xs text-gray-500 mt-1">≈ 1 BTC = NT$ 2,850,000</p>}
             </div>
           </div>
 
@@ -355,6 +378,11 @@ export default function Home() {
             variant="outline"
             size="sm"
             onClick={() => {
+              if (simulateDateBefore) {
+                setShowPreWithdrawalAlert(true)
+                return
+              }
+
               if (isUidBound) {
                 setIsWithdrawalModalOpen(true)
               } else {
@@ -380,7 +408,7 @@ export default function Home() {
             <div className="bg-gradient-to-r from-orange-100 to-orange-50 rounded-lg p-3 flex items-center justify-center gap-2 border border-orange-200">
               <Gift className="h-5 w-5 text-lion-orange" />
               <span className="text-sm font-semibold text-gray-800">
-                完成七天簽到獎勵：<span className="text-lion-orange">+{formatCryptoValue(0.0000037)} WBTC</span>
+                完成七天簽到獎勵：<span className="text-lion-orange">+{formatCryptoValue(0.0000037)} BTC</span>
               </span>
             </div>
 
@@ -509,7 +537,7 @@ export default function Home() {
         uid={exchangeUid}
         balances={{
           USDT: debugBalance ? 15 : 0,
-          WBTC: totalRewards
+          BTC: totalRewards
         }}
         hasKyc={hasKyc}
       />
@@ -532,6 +560,22 @@ export default function Home() {
           setIsWithdrawalModalOpen(true)
         }}
       />
+
+      <AlertDialog open={showPreWithdrawalAlert} onOpenChange={setShowPreWithdrawalAlert}>
+        <AlertDialogContent className="bg-white max-w-sm rounded-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-center">尚未開放提領</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-gray-600 pt-2">
+              本次活動獎勵將於 <span className="font-bold text-lion-orange">2026/03/28</span> 統一開放提領，敬請期待！
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="w-full bg-lion-orange hover:bg-lion-red text-white font-bold" onClick={() => setShowPreWithdrawalAlert(false)}>
+              好的，我知道了
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
