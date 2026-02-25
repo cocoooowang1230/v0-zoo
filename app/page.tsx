@@ -247,12 +247,12 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-lion-face-light pb-16">
       {/* Header */}
-      <header className="bg-gradient-to-r from-lion-orange to-lion-red text-white p-4 text-center shadow-md relative">
-        <div className="flex items-center justify-center gap-2">
-          <LionLogo size="sm" />
-          <h1 className="text-2xl font-bold">BitBee</h1>
+      <header className="bg-gradient-to-r from-lion-orange to-lion-red text-white p-4 text-center shadow-md relative overflow-hidden">
+        <div className="flex items-center justify-center gap-2 px-10">
+          <LionLogo size="sm" className="flex-shrink-0" />
+          <h1 className="text-xl sm:text-2xl font-bold truncate">BitBee</h1>
         </div>
-        <p className="mt-1 text-sm">完成任務獲取獎勵</p>
+        <p className="mt-1 text-sm opacity-90">完成任務獲取獎勵</p>
 
         {/* Debug Controls */}
         <div className="absolute right-2 top-2 flex flex-col gap-1 items-end z-10">
@@ -465,10 +465,10 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="bg-lion-face rounded-lg p-3 flex justify-between items-center border border-lion-face-dark">
+            <div className="bg-lion-face rounded-lg p-3 flex flex-wrap justify-between items-center gap-2 border border-lion-face-dark">
               <span className="text-sm font-medium text-gray-700">推薦獎勵</span>
-              <div className="flex items-center text-lion-orange font-bold">
-                <Gift className="h-5 w-5 mr-1" />
+              <div className="flex items-center text-lion-orange font-bold whitespace-nowrap">
+                <Gift className="h-5 w-5 mr-1 flex-shrink-0" />
                 <span>+10 $HONEY</span>
               </div>
             </div>

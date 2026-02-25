@@ -126,10 +126,10 @@ export default function TasksPage() {
   return (
     <div className="flex flex-col min-h-screen bg-lion-face-light pb-16">
       {/* Header */}
-      <header className="bg-gradient-to-r from-lion-orange to-lion-red text-white p-4 text-center shadow-md relative">
-        <div className="flex items-center justify-center gap-2">
-          <LionLogo size="sm" />
-          <h1 className="text-2xl font-bold">任務中心</h1>
+      <header className="bg-gradient-to-r from-lion-orange to-lion-red text-white p-4 text-center shadow-md relative overflow-hidden">
+        <div className="flex items-center justify-center gap-2 px-10">
+          <LionLogo size="sm" className="flex-shrink-0" />
+          <h1 className="text-xl sm:text-2xl font-bold truncate">任務中心</h1>
         </div>
 
         {/* Debug Controls */}
@@ -320,29 +320,29 @@ function TaskCard({
             : "border-lion-face-dark shadow-sm hover:shadow-lion"
         }`}
     >
-      <div className="flex items-start p-4 cursor-pointer" onClick={toggleExpand}>
+      <div className="flex items-start p-4 cursor-pointer gap-2" onClick={toggleExpand}>
         <div
-          className={`p-3 rounded-full mr-3 shadow-sm ${isCompleted ? "bg-green-500" : "bg-gradient-to-br from-lion-orange to-lion-red"
+          className={`p-3 rounded-full flex-shrink-0 shadow-sm ${isCompleted ? "bg-green-500" : "bg-gradient-to-br from-lion-orange to-lion-red"
             }`}
         >
           {isCompleted ? <Check className="h-5 w-5 text-white" /> : icon}
         </div>
 
-        <div className="flex-1">
-          <h3 className="font-bold text-lion-accent">{title}</h3>
-          <p className="text-sm text-gray-600">{description}</p>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-1">
+            <h3 className="font-bold text-lion-accent leading-tight flex-1 min-w-[140px]">{title}</h3>
+            <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-xs sm:text-sm border border-lion-face-dark whitespace-nowrap">
+              {reward}
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 leading-snug">{description}</p>
         </div>
 
-        <div className="flex flex-col items-end">
-          <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-sm border border-lion-face-dark mb-1">
-            {reward}
+        {!isCompleted && (
+          <div className="flex-shrink-0 text-gray-400 mt-1">
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </div>
-          {!isCompleted && (
-            <div className="text-gray-400">
-              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Expanded content */}
@@ -583,7 +583,7 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
   return (
     <div className={`bg-white rounded-xl border transition-all duration-200 overflow-hidden ${isCompleted ? "border-green-300 bg-green-50" : isExpanded ? "border-lion-orange shadow-lion" : "border-lion-face-dark shadow-sm hover:shadow-lion"}`}>
       <div
-        className="flex items-start p-4 cursor-pointer"
+        className="flex items-start p-4 cursor-pointer gap-2"
         onClick={() => {
           if (!completedTasks.includes("identity")) {
             onShowPrerequisite()
@@ -592,19 +592,23 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
           setIsExpanded(!isExpanded)
         }}
       >
-        <div className={`p-3 rounded-full mr-3 shadow-sm ${isCompleted ? "bg-green-500" : "bg-red-600"}`}>
+        <div className={`p-3 rounded-full flex-shrink-0 shadow-sm ${isCompleted ? "bg-green-500" : "bg-red-600"}`}>
           {isCompleted ? <Check className="h-5 w-5 text-white" /> : <Gift className="h-5 w-5 text-white" />}
         </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-lion-accent">義美活動: 分享活動辦法</h3>
-          <p className="text-sm text-gray-600">分享活動文案至社群媒體</p>
-        </div>
-        <div className="flex flex-col items-end">
-          <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-sm border border-lion-face-dark mb-1">
-            +{reward}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-1">
+            <h3 className="font-bold text-lion-accent leading-tight flex-1 min-w-[140px]">義美活動: 分享活動辦法</h3>
+            <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-xs sm:text-sm border border-lion-face-dark whitespace-nowrap">
+              +{reward}
+            </div>
           </div>
-          {!isCompleted && <div className="text-gray-400">{isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>}
+          <p className="text-sm text-gray-600 leading-snug">分享活動文案至社群媒體</p>
         </div>
+        {!isCompleted && (
+          <div className="flex-shrink-0 text-gray-400 mt-1">
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </div>
+        )}
       </div>
 
       {isCompleted && (
@@ -756,7 +760,7 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
   return (
     <div className={`bg-white rounded-xl border transition-all duration-200 overflow-hidden ${isCompleted ? "border-green-300 bg-green-50" : isExpanded ? "border-lion-orange shadow-lion" : "border-lion-face-dark shadow-sm hover:shadow-lion"}`}>
       <div
-        className="flex items-start p-4 cursor-pointer"
+        className="flex items-start p-4 cursor-pointer gap-2"
         onClick={() => {
           if (!completedTasks.includes("identity")) {
             onShowPrerequisite()
@@ -765,19 +769,23 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
           setIsExpanded(!isExpanded)
         }}
       >
-        <div className={`p-3 rounded-full mr-3 shadow-sm ${isCompleted ? "bg-green-500" : "bg-red-600"}`}>
+        <div className={`p-3 rounded-full flex-shrink-0 shadow-sm ${isCompleted ? "bg-green-500" : "bg-red-600"}`}>
           {isCompleted ? <Check className="h-5 w-5 text-white" /> : <Gift className="h-5 w-5 text-white" />}
         </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-lion-accent">義美活動: 觀看宣傳影片</h3>
-          <p className="text-sm text-gray-600">完整觀看影片並填寫 Email</p>
-        </div>
-        <div className="flex flex-col items-end">
-          <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-sm border border-lion-face-dark mb-1">
-            +{reward}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-1">
+            <h3 className="font-bold text-lion-accent leading-tight flex-1 min-w-[140px]">義美活動: 觀看宣傳影片</h3>
+            <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-xs sm:text-sm border border-lion-face-dark whitespace-nowrap">
+              +{reward}
+            </div>
           </div>
-          {!isCompleted && <div className="text-gray-400">{isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>}
+          <p className="text-sm text-gray-600 leading-snug">完整觀看影片並填寫 Email</p>
         </div>
+        {!isCompleted && (
+          <div className="flex-shrink-0 text-gray-400 mt-1">
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </div>
+        )}
       </div>
 
       {isCompleted && (
@@ -900,7 +908,7 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, 
   return (
     <div className={`bg-white rounded-xl border transition-all duration-200 overflow-hidden ${isCompleted ? "border-green-300 bg-green-50" : isExpanded ? "border-lion-orange shadow-lion" : "border-lion-face-dark shadow-sm hover:shadow-lion"}`}>
       <div
-        className="flex items-start p-4 cursor-pointer"
+        className="flex items-start p-4 cursor-pointer gap-2"
         onClick={() => {
           if (!completedTasks.includes("identity")) {
             onShowPrerequisite()
@@ -909,19 +917,23 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, 
           setIsExpanded(!isExpanded)
         }}
       >
-        <div className={`p-3 rounded-full mr-3 shadow-sm ${isCompleted ? "bg-green-500" : "bg-red-600"}`}>
+        <div className={`p-3 rounded-full flex-shrink-0 shadow-sm ${isCompleted ? "bg-green-500" : "bg-red-600"}`}>
           {isCompleted ? <Check className="h-5 w-5 text-white" /> : <Gift className="h-5 w-5 text-white" />}
         </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-lion-accent">義美活動: 購買商品拍照分享</h3>
-          <p className="text-sm text-gray-600">購買義美商品合照並公開分享</p>
-        </div>
-        <div className="flex flex-col items-end">
-          <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-sm border border-lion-face-dark mb-1">
-            +{reward}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-1">
+            <h3 className="font-bold text-lion-accent leading-tight flex-1 min-w-[140px]">義美活動: 購買商品拍照分享</h3>
+            <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-xs sm:text-sm border border-lion-face-dark whitespace-nowrap">
+              +{reward}
+            </div>
           </div>
-          {!isCompleted && <div className="text-gray-400">{isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>}
+          <p className="text-sm text-gray-600 leading-snug">購買義美商品合照並公開分享</p>
         </div>
+        {!isCompleted && (
+          <div className="flex-shrink-0 text-gray-400 mt-1">
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </div>
+        )}
       </div>
 
       {isCompleted && (
@@ -1039,7 +1051,7 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
   return (
     <div className={`bg-white rounded-xl border transition-all duration-200 overflow-hidden ${isCompleted ? "border-green-300 bg-green-50" : isExpanded ? "border-lion-orange shadow-lion" : "border-lion-face-dark shadow-sm hover:shadow-lion"}`}>
       <div
-        className="flex items-start p-4 cursor-pointer"
+        className="flex items-start p-4 cursor-pointer gap-2"
         onClick={() => {
           if (!completedTasks.includes("identity")) {
             onShowPrerequisite()
@@ -1048,19 +1060,23 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
           setIsExpanded(!isExpanded)
         }}
       >
-        <div className={`p-3 rounded-full mr-3 shadow-sm ${isCompleted ? "bg-green-500" : "bg-blue-600"}`}>
+        <div className={`p-3 rounded-full flex-shrink-0 shadow-sm ${isCompleted ? "bg-green-500" : "bg-blue-600"}`}>
           {isCompleted ? <Check className="h-5 w-5 text-white" /> : <Wallet className="h-5 w-5 text-white" />}
         </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-lion-accent">ZONE Wallet新手任務</h3>
-          <p className="text-sm text-gray-600">錢包連接與 UID 綁定教學</p>
-        </div>
-        <div className="flex flex-col items-end">
-          <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-sm border border-lion-face-dark mb-1">
-            +{reward}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-1">
+            <h3 className="font-bold text-lion-accent leading-tight flex-1 min-w-[140px]">ZONE Wallet新手任務</h3>
+            <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-xs sm:text-sm border border-lion-face-dark whitespace-nowrap">
+              +{reward}
+            </div>
           </div>
-          {!isCompleted && <div className="text-gray-400">{isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>}
+          <p className="text-sm text-gray-600 leading-snug">錢包連接與 UID 綁定教學</p>
         </div>
+        {!isCompleted && (
+          <div className="flex-shrink-0 text-gray-400 mt-1">
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </div>
+        )}
       </div>
 
       {isCompleted && (
