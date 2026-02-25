@@ -132,11 +132,11 @@ export default function TasksPage() {
           <h1 className="text-xl sm:text-2xl font-bold truncate">任務中心</h1>
         </div>
 
-        {/* Debug Controls */}
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-1">
+        {/* Debug Controls - Moved to left to avoid browser overlaps */}
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col gap-1 items-start z-50">
           <button
             onClick={() => setGlobalQuotaFull(!globalQuotaFull)}
-            className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded text-[9px] border border-white/30 transition-all font-mono"
+            className="bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded text-[9px] border border-white/30 transition-all font-mono whitespace-nowrap"
           >
             {globalQuotaFull ? "📢 FULL" : "📢 OPEN"}
           </button>
@@ -146,9 +146,9 @@ export default function TasksPage() {
               const currentIndex = states.indexOf(debugStatus);
               setDebugStatus(states[(currentIndex + 1) % states.length]);
             }}
-            className="bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded text-[9px] border border-white/30 transition-all font-mono"
+            className="bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded text-[9px] border border-white/30 transition-all font-mono whitespace-nowrap"
           >
-            � {debugStatus.toUpperCase()}
+            🐞 {debugStatus.toUpperCase()}
           </button>
         </div>
       </header>

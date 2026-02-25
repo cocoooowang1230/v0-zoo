@@ -254,16 +254,16 @@ export default function Home() {
         </div>
         <p className="mt-1 text-sm opacity-90">完成任務獲取獎勵</p>
 
-        {/* Debug Controls */}
-        <div className="absolute right-2 top-2 flex flex-col gap-1 items-end z-10">
+        {/* Debug Controls - Moved to left to avoid browser overlaps */}
+        <div className="absolute left-2 top-2 flex flex-col gap-1 items-start z-50">
           <button
             onClick={() => {
               localStorage.clear()
               window.location.reload()
             }}
-            className="bg-white/20 hover:bg-white/30 text-[10px] px-2 py-1 rounded border border-white/40 transition-colors whitespace-nowrap"
+            className="bg-white/20 hover:bg-white/30 text-[9px] px-1.5 py-0.5 rounded border border-white/40 transition-colors whitespace-nowrap"
           >
-            🔧 重置測試
+            🔧 重置
           </button>
           <button
             onClick={() => {
@@ -278,13 +278,13 @@ export default function Home() {
               }
             }}
             className={cn(
-              "text-[10px] px-2 py-1 rounded border transition-colors whitespace-nowrap",
+              "text-[9px] px-1.5 py-0.5 rounded border transition-colors whitespace-nowrap",
               debugBalance
                 ? "bg-green-500 text-white border-green-400"
                 : "bg-white/20 hover:bg-white/30 border-white/40"
             )}
           >
-            💰 模擬提現
+            💰 提現
           </button>
           <button
             onClick={() => {
@@ -292,7 +292,7 @@ export default function Home() {
               toast({ title: hasKyc ? "已關閉 KYC" : "已開啟 KYC", description: hasKyc ? "模擬未通過身份驗證" : "模擬已通過身份驗證" })
             }}
             className={cn(
-              "text-[10px] px-2 py-1 rounded border transition-colors whitespace-nowrap",
+              "text-[9px] px-1.5 py-0.5 rounded border transition-colors whitespace-nowrap",
               hasKyc
                 ? "bg-blue-500 text-white border-blue-400"
                 : "bg-white/20 hover:bg-white/30 border-white/40"
@@ -310,13 +310,13 @@ export default function Home() {
               })
             }}
             className={cn(
-              "text-[10px] px-2 py-1 rounded border transition-colors whitespace-nowrap",
+              "text-[9px] px-1.5 py-0.5 rounded border transition-colors whitespace-nowrap",
               simulateDateBefore
                 ? "bg-yellow-500 text-white border-yellow-400"
                 : "bg-green-500 text-white border-green-400"
             )}
           >
-            📅 時間: {simulateDateBefore ? "< 3/28" : "> 3/28"}
+            📅 {simulateDateBefore ? "< 3/28" : "> 3/28"}
           </button>
         </div>
       </header>
@@ -324,11 +324,11 @@ export default function Home() {
       <main className="flex-1 container max-w-md mx-auto p-4 space-y-4">
         {/* Token Balance Display Section */}
         <Card className="p-4 rounded-xl bg-white border-2 border-lion-orange/20 shadow-lion">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-lion-accent">王琳瑄Coco的錢包</h2>
-            <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 className="text-sm sm:text-lg font-bold text-lion-accent truncate flex-1 min-w-[120px]">王琳瑄Coco的錢包</h2>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
               <Image src="/images/honey-icon.png" alt="Honey" width={24} height={24} className="object-contain" />
-              <span className="text-lg font-bold text-black">HONEY x 30</span>
+              <span className="text-base sm:text-lg font-bold text-black whitespace-nowrap">HONEY x 30</span>
             </div>
           </div>
 
