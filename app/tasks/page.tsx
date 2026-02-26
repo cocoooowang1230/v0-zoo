@@ -28,6 +28,10 @@ export default function TasksPage() {
   const [showPrerequisiteDialog, setShowPrerequisiteDialog] = useState(false)
   const [globalQuotaFull, setGlobalQuotaFull] = useState(false)
   const [debugStatus, setDebugStatus] = useState<"idle" | "pending" | "rejected" | "completed">("idle") // Status testing state
+  // 0 = open, 1500 = phase1 full (next phase 2000), 3500 = all full
+  const [shareVideoQuotaCount, setShareVideoQuotaCount] = useState<0 | 1500 | 3500>(0)
+  // 0 = open, 200 = phase1 full (next phase 100), 300 = all full
+  const [buyQuotaCount, setBuyQuotaCount] = useState<0 | 200 | 300>(0)
   const [autoExpandZone, setAutoExpandZone] = useState(false)
   const zoneTaskRef = React.useRef<HTMLDivElement>(null)
 
@@ -132,25 +136,6 @@ export default function TasksPage() {
           <h1 className="text-xl sm:text-2xl font-bold truncate">任務中心</h1>
         </div>
 
-        {/* Debug Controls - Moved to left to avoid browser overlaps */}
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 flex flex-col gap-1 items-start z-50">
-          <button
-            onClick={() => setGlobalQuotaFull(!globalQuotaFull)}
-            className="bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded text-[9px] border border-white/30 transition-all font-mono whitespace-nowrap"
-          >
-            {globalQuotaFull ? "📢 FULL" : "📢 OPEN"}
-          </button>
-          <button
-            onClick={() => {
-              const states: ("idle" | "pending" | "rejected" | "completed")[] = ["idle", "pending", "rejected", "completed"];
-              const currentIndex = states.indexOf(debugStatus);
-              setDebugStatus(states[(currentIndex + 1) % states.length]);
-            }}
-            className="bg-white/20 hover:bg-white/30 px-1.5 py-0.5 rounded text-[9px] border border-white/30 transition-all font-mono whitespace-nowrap"
-          >
-            🐞 {debugStatus.toUpperCase()}
-          </button>
-        </div>
       </header>
 
       {/* Tasks List */}
@@ -198,6 +183,7 @@ export default function TasksPage() {
             onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
             isQuotaFull={globalQuotaFull}
             debugStatus={debugStatus}
+            quotaCount={shareVideoQuotaCount}
           />
 
           <ImeiVideoTask
@@ -205,6 +191,7 @@ export default function TasksPage() {
             onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
             isQuotaFull={globalQuotaFull}
             debugStatus={debugStatus}
+            quotaCount={shareVideoQuotaCount}
           />
 
           <ImeiBuyTask
@@ -212,7 +199,53 @@ export default function TasksPage() {
             onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
             isQuotaFull={globalQuotaFull}
             debugStatus={debugStatus}
+            quotaCount={buyQuotaCount}
           />
+        </div>
+      </div>
+
+      {/* Debug Panel */}
+      <div className="container max-w-md mx-auto px-4 pb-4">
+        <div className="bg-gray-800 rounded-xl p-3 border border-gray-600">
+          <p className="text-gray-400 text-xs font-mono mb-2 text-center">🛠 DEBUG PANEL</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setGlobalQuotaFull(!globalQuotaFull)}
+              className={`py-2 px-3 rounded-lg text-sm font-mono font-bold border transition-all ${globalQuotaFull ? 'bg-red-600 border-red-400 text-white' : 'bg-gray-700 border-gray-500 text-gray-200 hover:bg-gray-600'}`}
+            >
+              📢 {globalQuotaFull ? "QUOTA FULL" : "QUOTA OPEN"}
+            </button>
+            <button
+              onClick={() => {
+                const states: ("idle" | "pending" | "rejected" | "completed")[] = ["idle", "pending", "rejected", "completed"];
+                const currentIndex = states.indexOf(debugStatus);
+                setDebugStatus(states[(currentIndex + 1) % states.length]);
+              }}
+              className="py-2 px-3 rounded-lg text-sm font-mono font-bold border bg-gray-700 border-gray-500 text-gray-200 hover:bg-gray-600 transition-all"
+            >
+              🐞 {debugStatus.toUpperCase()}
+            </button>
+            <button
+              onClick={() => {
+                const counts: (0 | 1500 | 3500)[] = [0, 1500, 3500];
+                const idx = counts.indexOf(shareVideoQuotaCount);
+                setShareVideoQuotaCount(counts[(idx + 1) % counts.length]);
+              }}
+              className={`py-2 px-3 rounded-lg text-sm font-mono font-bold border transition-all ${shareVideoQuotaCount > 0 ? 'bg-orange-700 border-orange-500 text-white' : 'bg-gray-700 border-gray-500 text-gray-200 hover:bg-gray-600'}`}
+            >
+              🎬 分享/影片: {shareVideoQuotaCount}
+            </button>
+            <button
+              onClick={() => {
+                const counts: (0 | 200 | 300)[] = [0, 200, 300];
+                const idx = counts.indexOf(buyQuotaCount);
+                setBuyQuotaCount(counts[(idx + 1) % counts.length]);
+              }}
+              className={`py-2 px-3 rounded-lg text-sm font-mono font-bold border transition-all ${buyQuotaCount > 0 ? 'bg-orange-700 border-orange-500 text-white' : 'bg-gray-700 border-gray-500 text-gray-200 hover:bg-gray-600'}`}
+            >
+              🛒 購買: {buyQuotaCount}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -513,10 +546,14 @@ interface ImeiTaskProps {
   isQuotaFull?: boolean
   debugStatus?: "idle" | "pending" | "rejected" | "completed"
   forceExpand?: boolean
+  // For share/video tasks: 0 = open, 1500 = phase1 full, 3500 = all full
+  // For buy task: 0 = open, 200 = phase1 full, 300 = all full
+  quotaCount?: 0 | 200 | 300 | 1500 | 3500
 }
 
-function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus }: ImeiTaskProps) {
+function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus, quotaCount = 0 }: ImeiTaskProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false)
   const [state, setState] = useState({
     status: "idle",
     url: "",
@@ -528,12 +565,22 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
   useEffect(() => { setLocalStatus(null); }, [debugStatus]);
 
   const activeStatus = localStatus || (debugStatus !== "idle" ? debugStatus : state.status);
-  const activeQuotaFull = isQuotaFull;
   const isCompleted = activeStatus === "completed" || completedTasks.includes("imei_share")
+
+  // quota helpers for share/video: thresholds 1500 / 3500
+  const isPhase1Full = (quotaCount as number) >= 1500
+  const isAllFull = (quotaCount as number) >= 3500
+  const quotaDialogMessage = isAllFull
+    ? "本活動名額（3500 人）已全數額滿，感謝您的參與！"
+    : "本階段名額 1500 人已額滿，下一階段將開放 2000 人"
 
   const reward = formatCryptoValue(0.00000109) + " BTC"
 
   const handleSubmit = () => {
+    if (isPhase1Full) {
+      setShowQuotaDialog(true)
+      return
+    }
     // Simulate API call
     setState((prev) => ({ ...prev, status: "pending" }))
     setLocalStatus("pending")
@@ -674,15 +721,13 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
                 </div>
                 <Button
                   size="sm"
-                  className={`w-full ${activeQuotaFull ? 'bg-red-500 cursor-not-allowed opacity-70' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium`}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
                   onClick={handleSubmit}
-                  disabled={!state.url || activeQuotaFull}
+                  disabled={!state.url}
                 >
-                  {activeQuotaFull ? "名額已滿" : "提交驗證"}
+                  提交驗證
                 </Button>
-                {!activeQuotaFull && (
-                  <p className="text-xs text-orange-600 text-center mt-2">名額有限，提交後將進入審核排隊</p>
-                )}
+                <p className="text-xs text-orange-600 text-center mt-2">名額有限，提交後將進入審核排隊</p>
               </div>
             ) : activeStatus === 'pending' ? (
               <div className="bg-blue-50 text-blue-800 text-sm p-4 rounded-lg border border-blue-200 space-y-3">
@@ -716,13 +761,30 @@ function ImeiShareTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
           </div>
         </div>
       )}
+
+      <AlertDialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
+        <AlertDialogContent className="max-w-sm bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-gray-900">名額已滿</AlertDialogTitle>
+            <AlertDialogDescription className="text-base text-gray-700">
+              {quotaDialogMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="bg-lion-orange hover:bg-lion-red text-white font-semibold">
+              確定
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
 
-function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus }: ImeiTaskProps) {
+function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus, quotaCount = 0 }: ImeiTaskProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [showErrorDialog, setShowErrorDialog] = useState(false)
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false)
   const [state, setState] = useState({
     status: "idle",
     email: ""
@@ -732,15 +794,21 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
   const [localStatus, setLocalStatus] = useState<string | null>(null);
   useEffect(() => { setLocalStatus(null); }, [debugStatus]);
 
-  const activeQuotaFull = isQuotaFull;
   const activeStatus = localStatus || (debugStatus !== "idle" ? debugStatus : state.status);
   const isCompleted = activeStatus === "completed" || completedTasks.includes("imei_video")
+
+  // quota helpers for share/video: thresholds 1500 / 3500
+  const isPhase1Full = (quotaCount as number) >= 1500
+  const isAllFull = (quotaCount as number) >= 3500
+  const quotaDialogMessage = isAllFull
+    ? "本活動名額（3500 人）已全數額滿，感謝您的參與！"
+    : "本階段名額 1500 人已額滿，下一階段將開放 2000 人"
 
   const reward = formatCryptoValue(0.00000109) + " BTC"
 
   const handleSubmit = () => {
-    if (activeQuotaFull) {
-      toast({ title: "任務已結束", description: "本任務已達參與人數上限", variant: "destructive" })
+    if (isPhase1Full) {
+      setShowQuotaDialog(true)
       return
     }
     if (!state.email) {
@@ -835,11 +903,11 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
                   />
                   <Button
                     size="sm"
-                    className={`w-full ${activeQuotaFull ? 'bg-red-500 cursor-not-allowed opacity-70' : 'bg-lion-orange hover:bg-lion-red'} text-white font-bold h-10 shadow-md transform active:scale-95 transition-all`}
+                    className="w-full bg-lion-orange hover:bg-lion-red text-white font-bold h-10 shadow-md transform active:scale-95 transition-all"
                     onClick={handleSubmit}
-                    disabled={!state.email || activeQuotaFull}
+                    disabled={!state.email}
                   >
-                    {activeQuotaFull ? "名額已滿" : "驗證完成"}
+                    驗證完成
                   </Button>
                 </div>
               </div>
@@ -869,12 +937,29 @@ function ImeiVideoTask({ completedTasks, onShowPrerequisite, isQuotaFull = false
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div >
+
+      <AlertDialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
+        <AlertDialogContent className="max-w-sm bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-gray-900">名額已滿</AlertDialogTitle>
+            <AlertDialogDescription className="text-base text-gray-700">
+              {quotaDialogMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="bg-lion-orange hover:bg-lion-red text-white font-semibold">
+              確定
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }
 
-function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus }: ImeiTaskProps) {
+function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, debugStatus, quotaCount = 0 }: ImeiTaskProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [showQuotaDialog, setShowQuotaDialog] = useState(false)
   const [state, setState] = useState({
     status: "idle",
     url: "",
@@ -886,12 +971,22 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, 
   useEffect(() => { setLocalStatus(null); }, [debugStatus]);
 
   const activeStatus = localStatus || (debugStatus !== "idle" ? debugStatus : state.status);
-  const activeQuotaFull = isQuotaFull;
   const isCompleted = activeStatus === "completed" || completedTasks.includes("imei_buy")
+
+  // quota helpers for buy task: thresholds 200 / 300
+  const isPhase1Full = (quotaCount as number) >= 200
+  const isAllFull = (quotaCount as number) >= 300
+  const quotaDialogMessage = isAllFull
+    ? "本活動名額（300 人）已全數額滿，感謝您的參與！"
+    : "本階段名額 200 人已額滿，下一階段將開放 100 人"
 
   const reward = formatCryptoValue(0.00000549) + " BTC"
 
   const handleSubmit = () => {
+    if (isPhase1Full) {
+      setShowQuotaDialog(true)
+      return
+    }
     setState((prev) => ({ ...prev, status: "pending" }))
     setLocalStatus("pending")
     toast({
@@ -976,15 +1071,13 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, 
                 </div>
                 <Button
                   size="sm"
-                  className={`w-full ${activeQuotaFull ? 'bg-red-500 cursor-not-allowed opacity-70' : 'bg-purple-600 hover:bg-purple-700'} text-white font-medium`}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium"
                   onClick={handleSubmit}
-                  disabled={!state.url || activeQuotaFull}
+                  disabled={!state.url}
                 >
-                  {activeQuotaFull ? "名額已滿" : "提交驗證"}
+                  提交驗證
                 </Button>
-                {!activeQuotaFull && (
-                  <p className="text-xs text-orange-600 text-center mt-2">名額有限，提交後將進入審核排隊</p>
-                )}
+                <p className="text-xs text-orange-600 text-center mt-2">名額有限，提交後將進入審核排隊</p>
               </div>
             ) : activeStatus === 'pending' ? (
               <div className="bg-blue-50 text-blue-800 text-sm p-4 rounded-lg border border-blue-200 space-y-3">
@@ -1018,6 +1111,22 @@ function ImeiBuyTask({ completedTasks, onShowPrerequisite, isQuotaFull = false, 
           </div>
         </div>
       )}
+
+      <AlertDialog open={showQuotaDialog} onOpenChange={setShowQuotaDialog}>
+        <AlertDialogContent className="max-w-sm bg-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-gray-900">名額已滿</AlertDialogTitle>
+            <AlertDialogDescription className="text-base text-gray-700">
+              {quotaDialogMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="bg-lion-orange hover:bg-lion-red text-white font-semibold">
+              確定
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
