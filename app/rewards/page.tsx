@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 export default function RewardsPage() {
   // Sample reward history data
   const rewardHistory = [
+    { id: 0, type: "CPX 問卷任務", token: "HONEY", amount: 150, timestamp: "2026-05-14 10:20" },
     { id: 1, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-05-11 13:45" },
     { id: 2, type: "加入社區", token: "ZOO", amount: 3, timestamp: "2025-05-10 18:22" },
     { id: 3, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-05-10 09:15" },
@@ -69,6 +70,8 @@ export default function RewardsPage() {
         return "/images/zoo-token.png"
       case "BTC":
         return "/images/wbtc-token.png"
+      case "HONEY":
+        return "/images/honey-icon.png"
       default:
         return "/images/kaia-token.png"
     }
@@ -83,6 +86,8 @@ export default function RewardsPage() {
         return "text-lion-teal"
       case "BTC":
         return "text-orange-500"
+      case "HONEY":
+        return "text-yellow-500"
       default:
         return "text-lion-orange"
     }

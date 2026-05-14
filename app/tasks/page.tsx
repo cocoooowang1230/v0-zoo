@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
-import { MonitorPlay, Share2, Camera, Clock, Gift, Copy } from "lucide-react"
+import { MonitorPlay, Share2, Camera, Clock, Gift, Copy, ClipboardList } from "lucide-react"
 import { formatCryptoValue } from "@/lib/utils"
 
 export default function TasksPage() {
@@ -59,10 +59,21 @@ export default function TasksPage() {
     }
   }, [])
 
+  useEffect(() => {
+    const saved = localStorage.getItem("completedTasks")
+    if (saved) {
+      try {
+        setCompletedTasks(JSON.parse(saved))
+      } catch (e) {}
+    }
+  }, [])
+
   // Function to mark a task as completed
   const completeTask = (taskId: string, reward: string) => {
     if (!completedTasks.includes(taskId)) {
-      setCompletedTasks([...completedTasks, taskId])
+      const updated = [...completedTasks, taskId]
+      setCompletedTasks(updated)
+      localStorage.setItem("completedTasks", JSON.stringify(updated))
 
       toast({
         title: "任務完成!",
@@ -173,6 +184,12 @@ export default function TasksPage() {
             onComplete={() => completeTask("discord", "+5 $HONEY")}
             onDiscordCallback={handleDiscordCallback}
             isVerifying={discordVerifying}
+            completedTasks={completedTasks}
+            onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
+          />
+
+          {/* Survey Task */}
+          <SurveyTaskCard 
             completedTasks={completedTasks}
             onShowPrerequisite={() => setShowPrerequisiteDialog(true)}
           />
@@ -1274,6 +1291,38 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function SurveyTaskCard({ completedTasks, onShowPrerequisite }: { completedTasks: string[], onShowPrerequisite: () => void }) {
+  const handleSurveyClick = () => {
+    if (!completedTasks.includes("identity")) {
+      onShowPrerequisite()
+      return
+    }
+    window.location.href = "/surveys"
+  }
+
+  return (
+    <div
+      className="bg-white rounded-xl border border-lion-face-dark shadow-sm hover:shadow-lion transition-all duration-200 overflow-hidden cursor-pointer"
+      onClick={handleSurveyClick}
+    >
+      <div className="flex items-start p-4 gap-2">
+        <div className="p-3 rounded-full flex-shrink-0 shadow-sm bg-gradient-to-br from-lion-orange to-lion-red">
+          <ClipboardList className="h-5 w-5 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-1">
+            <h3 className="font-bold text-lion-accent leading-tight flex-1 min-w-[140px]">問卷任務 (Surveys)</h3>
+            <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-xs sm:text-sm border border-lion-face-dark whitespace-nowrap">
+              + Honey
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 leading-snug">完成問卷調查，賺取豐富獎勵</p>
+        </div>
+      </div>
     </div>
   )
 }
