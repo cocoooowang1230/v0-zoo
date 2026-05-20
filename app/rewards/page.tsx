@@ -157,7 +157,7 @@ export default function RewardsPage() {
                   </span>
                   {reward.status === "驗證中" && (
                     <span className="text-[10px] bg-lion-orange/10 text-lion-orange px-1.5 py-0.5 rounded border border-lion-orange/20 mt-1">
-                      驗證中 (5天後解鎖)
+                      驗證中 (14天後解鎖)
                     </span>
                   )}
                 </div>

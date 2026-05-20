@@ -1378,7 +1378,7 @@ function SurveyTaskCard({ completedTasks, onShowPrerequisite }: { completedTasks
                     <span className="text-sm text-gray-600">最高可獲得</span>
                     <span className="text-lg font-bold text-lion-orange">{survey.reward_honey} Honey</span>
                   </div>
-                  <p className="text-[10px] text-gray-400 mt-1">完成並通過驗證後，5 天後可提領</p>
+                  <p className="text-[10px] text-gray-400 mt-1">完成並通過驗證後，14 天後可提領</p>
                 </div>
                 <Button size="sm" variant="orange" className="h-8 px-3 text-xs" onClick={(e) => { e.stopPropagation(); handleSurveyClick(survey); }}>
                   開始問卷
