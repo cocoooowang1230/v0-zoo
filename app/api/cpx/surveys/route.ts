@@ -61,7 +61,7 @@ export async function GET(request: Request) {
     if (data.status === "success" && data.surveys && data.surveys.length > 0) {
         // CPX returns surveys array
         const formattedSurveys = data.surveys.map((survey: any) => {
-            const usdAmount = parseFloat(survey.payout || survey.amount_usd || 0)
+            const usdAmount = parseFloat(survey.amount_usd || survey.payout || 0)
             const rewardHoney = Math.floor(usdAmount * USER_REWARD_PERCENTAGE * USD_TO_HONEY_RATE)
             return {
                 id: survey.id,
