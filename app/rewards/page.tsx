@@ -42,26 +42,68 @@ export default function RewardsPage() {
   const itemsPerPage = 10
   const totalPages = Math.ceil(dynamicRewardHistory.length / itemsPerPage) || 1
 
-  import("react").then(({ useEffect }) => {
-    useEffect(() => {
-      const pendingSurveysStr = localStorage.getItem("pendingSurveys")
-      let pendingSurveys: any[] = []
-      if (pendingSurveysStr) {
-        try {
-          const parsed = JSON.parse(pendingSurveysStr)
-          pendingSurveys = parsed.map((ps: any, idx: number) => ({
-            id: `pending_${idx}`,
-            type: "CPX 問卷任務",
-            token: "HONEY",
-            amount: ps.amount,
-            timestamp: ps.timestamp ? new Date(ps.timestamp).toLocaleString("sv-SE").slice(0, 16) : "Just now",
-            status: "驗證中"
-          }))
-        } catch(e){}
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // 1. Process CPX Redirect if exists
+    const searchParams = new URLSearchParams(window.location.search);
+    const cpxStatus = searchParams.get('cpx_status');
+    const rewardStr = searchParams.get('reward');
+    
+    if (cpxStatus === 'success' && rewardStr) {
+      const rewardAmount = parseInt(rewardStr, 10);
+      if (!isNaN(rewardAmount)) {
+        // Add pending honey to local storage
+        const currentPending = Number(localStorage.getItem("pendingHoney") || 0)
+        localStorage.setItem("pendingHoney", String(currentPending + rewardAmount))
+        
+        const pendingSurveys = JSON.parse(localStorage.getItem("pendingSurveys") || "[]")
+        pendingSurveys.push({
+          id: "cpx_completed_" + Date.now(),
+          amount: rewardAmount,
+          timestamp: new Date().toISOString(),
+          status: "pending"
+        })
+        localStorage.setItem("pendingSurveys", JSON.stringify(pendingSurveys))
+        
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname)
       }
-      setDynamicRewardHistory([...pendingSurveys, ...rewardHistory])
-    }, [])
-  })
+    } else if (cpxStatus === 'screenout') {
+        const currentAvailable = Number(localStorage.getItem("availableHoney") || 0)
+        localStorage.setItem("availableHoney", String(currentAvailable + 2))
+        
+        const pendingSurveys = JSON.parse(localStorage.getItem("pendingSurveys") || "[]")
+        pendingSurveys.push({
+          id: "cpx_screenout_" + Date.now(),
+          amount: 2,
+          timestamp: new Date().toISOString(),
+          status: "安慰獎"
+        })
+        localStorage.setItem("pendingSurveys", JSON.stringify(pendingSurveys))
+        
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname)
+    }
+
+    // 2. Load History
+    const pendingSurveysStr = localStorage.getItem("pendingSurveys")
+    let pendingSurveys: any[] = []
+    if (pendingSurveysStr) {
+      try {
+        const parsed = JSON.parse(pendingSurveysStr)
+        pendingSurveys = parsed.map((ps: any, idx: number) => ({
+          id: `pending_${idx}_${ps.id}`,
+          type: ps.status === "安慰獎" ? "CPX 問卷 (安慰獎)" : "CPX 問卷任務",
+          token: "HONEY",
+          amount: ps.amount,
+          timestamp: ps.timestamp ? new Date(ps.timestamp).toLocaleString("sv-SE").slice(0, 16) : "Just now",
+          status: ps.status === "安慰獎" ? "已入帳" : "驗證中"
+        }))
+      } catch(e){}
+    }
+    setDynamicRewardHistory([...pendingSurveys, ...rewardHistory])
+  }, [])
 
   // Get current page items
   const getCurrentPageItems = () => {
@@ -158,6 +200,11 @@ export default function RewardsPage() {
                   {reward.status === "驗證中" && (
                     <span className="text-[10px] bg-lion-orange/10 text-lion-orange px-1.5 py-0.5 rounded border border-lion-orange/20 mt-1">
                       驗證中 (14天後解鎖)
+                    </span>
+                  )}
+                  {reward.status === "已入帳" && (
+                    <span className="text-[10px] bg-green-500/10 text-green-600 px-1.5 py-0.5 rounded border border-green-500/20 mt-1">
+                      已入帳
                     </span>
                   )}
                 </div>
