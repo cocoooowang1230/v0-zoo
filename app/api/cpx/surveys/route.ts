@@ -61,16 +61,18 @@ export async function GET(request: Request) {
     if (data.status === "success" && data.surveys && data.surveys.length > 0) {
         // CPX returns surveys array
         const formattedSurveys = data.surveys.map((survey: any) => {
-            const usdAmount = parseFloat(survey.amount_usd || survey.payout || 0)
-            const rewardHoney = Math.floor(usdAmount * USER_REWARD_PERCENTAGE * USD_TO_HONEY_RATE)
+            // payout = already converted to Honey by CPX (e.g. 351 Honey)
+            // payout_publisher_usd = real USD amount CPX pays us (e.g. 1.17 USD)
+            const publisherUsd = parseFloat(survey.payout_publisher_usd || 0)
+            const rewardHoney = Math.floor(publisherUsd * USER_REWARD_PERCENTAGE * USD_TO_HONEY_RATE)
             return {
                 id: survey.id,
                 loi: survey.loi,
-                amount_usd: usdAmount.toFixed(2),
+                amount_usd: publisherUsd.toFixed(2),
                 reward_honey: rewardHoney,
                 payout: survey.payout,
                 href: survey.href,
-                tags: [] // Add your own tag logic based on CPX attributes if needed
+                tags: survey.webcam ? ["webcam"] : []
             }
         })
 
