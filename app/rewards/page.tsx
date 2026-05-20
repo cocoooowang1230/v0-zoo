@@ -70,13 +70,14 @@ export default function RewardsPage() {
         window.history.replaceState({}, document.title, window.location.pathname)
       }
     } else if (cpxStatus === 'screenout') {
+        const rewardAmount = parseInt(rewardStr || '0', 10);
         const currentAvailable = Number(localStorage.getItem("availableHoney") || 0)
-        localStorage.setItem("availableHoney", String(currentAvailable + 2))
+        localStorage.setItem("availableHoney", String(currentAvailable + rewardAmount))
         
         const pendingSurveys = JSON.parse(localStorage.getItem("pendingSurveys") || "[]")
         pendingSurveys.push({
           id: "cpx_screenout_" + Date.now(),
-          amount: 2,
+          amount: rewardAmount,
           timestamp: new Date().toISOString(),
           status: "安慰獎"
         })
