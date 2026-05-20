@@ -1299,7 +1299,6 @@ function SurveyTaskCard({ completedTasks, onShowPrerequisite }: { completedTasks
   const [surveys, setSurveys] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
-  const [selectedSurvey, setSelectedSurvey] = useState<any>(null)
   
   useEffect(() => {
     const fetchSurveys = async () => {
@@ -1326,32 +1325,7 @@ function SurveyTaskCard({ completedTasks, onShowPrerequisite }: { completedTasks
       onShowPrerequisite()
       return
     }
-    setSelectedSurvey(survey)
-  }
-
-  const handleSimulateCompletion = () => {
-    if (!selectedSurvey) return
-    
-    // Add pending honey to local storage
-    const currentPending = Number(localStorage.getItem("pendingHoney") || 0)
-    localStorage.setItem("pendingHoney", String(currentPending + selectedSurvey.reward_honey))
-    
-    // Mark this specific survey as pending
-    const pendingSurveys = JSON.parse(localStorage.getItem("pendingSurveys") || "[]")
-    pendingSurveys.push({
-      id: selectedSurvey.id + "_" + Date.now(),
-      amount: selectedSurvey.reward_honey,
-      timestamp: new Date().toISOString(),
-      status: "pending"
-    })
-    localStorage.setItem("pendingSurveys", JSON.stringify(pendingSurveys))
-    
-    toast({
-      title: "問卷提交成功",
-      description: "您的獎勵已進入 Pending 狀態，將於 5 天後解鎖",
-    })
-    
-    setSelectedSurvey(null)
+    window.open(survey.href, '_blank')
   }
 
   return (
@@ -1415,25 +1389,6 @@ function SurveyTaskCard({ completedTasks, onShowPrerequisite }: { completedTasks
         )}
       </div>
 
-      <AlertDialog open={!!selectedSurvey} onOpenChange={(open) => !open && setSelectedSurvey(null)}>
-        <AlertDialogContent className="bg-white max-w-sm rounded-xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-bold text-center">即將前往 CPX Research 問卷</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-gray-600 pt-2 space-y-2">
-              <p>您即將離開 BitBee 前往填寫問卷。</p>
-              <p className="font-medium text-lion-orange bg-lion-orange/10 p-2 rounded-md">完成並通過 CPX 驗證後，獎勵會先進入 Pending Honey，5 天後才可提領。</p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col gap-2 sm:flex-col sm:space-x-0 mt-4">
-            <AlertDialogAction className="w-full bg-lion-orange hover:bg-lion-red text-white font-bold" onClick={handleSimulateCompletion}>
-              模擬完成問卷 (回傳 Postback)
-            </AlertDialogAction>
-            <Button variant="outline" className="w-full" onClick={() => setSelectedSurvey(null)}>
-              取消
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }
