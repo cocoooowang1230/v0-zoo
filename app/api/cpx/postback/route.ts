@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   const status = searchParams.get('status');
   const user_id = searchParams.get('user_id');
   const amount_local = searchParams.get('amount_local');
-  const hash = searchParams.get('hash');
+  const hash = searchParams.get('hash') || searchParams.get('secure_hash');
 
   const cpxSecureHash = process.env.CPX_SECURE_HASH || 'mock_secure_hash';
 
@@ -67,7 +67,11 @@ export async function GET(request: Request) {
 
     console.log(`[CPX Webhook] Success: Awarded user ${user_id} for transaction ${trans_id} amount ${amount_local}`);
   } else if (status === '2') {
-    console.log(`[CPX Webhook] Screenout: User ${user_id} screened out from survey (trans_id: ${trans_id})`);
+    console.log(`[CPX Webhook] Reversed (Fraud): Deducting user ${user_id} for transaction ${trans_id}`);
+    // TODO: Engineer logic to deduct pending honey or ban user
+  } else if (status === 'screenout') {
+    console.log(`[CPX Webhook] Screenout: User ${user_id} screened out (trans_id: ${trans_id}). Awarding 2 Honey comfort bonus.`);
+    // TODO: Engineer logic to instantly award 2 Honey to user's available balance
   }
 
   return NextResponse.json({ success: true, message: 'Postback processed' });
