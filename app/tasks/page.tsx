@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
-import { MonitorPlay, Share2, Camera, Clock, Gift, Copy, ClipboardList } from "lucide-react"
+import { MonitorPlay, Share2, Camera, Clock, Gift, Copy, ClipboardList, Loader2 } from "lucide-react"
 import { formatCryptoValue } from "@/lib/utils"
 
 export default function TasksPage() {
@@ -1296,33 +1296,144 @@ function ZoneWalletGuideTask({ completedTasks, onShowPrerequisite, forceExpand }
 }
 
 function SurveyTaskCard({ completedTasks, onShowPrerequisite }: { completedTasks: string[], onShowPrerequisite: () => void }) {
-  const handleSurveyClick = () => {
+  const [surveys, setSurveys] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+  const [selectedSurvey, setSelectedSurvey] = useState<any>(null)
+  
+  useEffect(() => {
+    const fetchSurveys = async () => {
+      try {
+        const userId = localStorage.getItem("exchangeUid") || "mock_user_123"
+        const res = await fetch(`/api/cpx/surveys?ext_user_id=${userId}`)
+        if (!res.ok) throw new Error("Fetch failed")
+        const data = await res.json()
+        if (data.status === "success" && data.surveys) {
+          setSurveys(data.surveys)
+        }
+      } catch (err) {
+        console.error(err)
+        setError(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchSurveys()
+  }, [])
+
+  const handleSurveyClick = (survey: any) => {
     if (!completedTasks.includes("identity")) {
       onShowPrerequisite()
       return
     }
-    window.location.href = "/surveys"
+    setSelectedSurvey(survey)
+  }
+
+  const handleSimulateCompletion = () => {
+    if (!selectedSurvey) return
+    
+    // Add pending honey to local storage
+    const currentPending = Number(localStorage.getItem("pendingHoney") || 0)
+    localStorage.setItem("pendingHoney", String(currentPending + selectedSurvey.reward_honey))
+    
+    // Mark this specific survey as pending
+    const pendingSurveys = JSON.parse(localStorage.getItem("pendingSurveys") || "[]")
+    pendingSurveys.push({
+      id: selectedSurvey.id + "_" + Date.now(),
+      amount: selectedSurvey.reward_honey,
+      timestamp: new Date().toISOString(),
+      status: "pending"
+    })
+    localStorage.setItem("pendingSurveys", JSON.stringify(pendingSurveys))
+    
+    toast({
+      title: "問卷提交成功",
+      description: "您的獎勵已進入 Pending 狀態，將於 5 天後解鎖",
+    })
+    
+    setSelectedSurvey(null)
   }
 
   return (
-    <div
-      className="bg-white rounded-xl border border-lion-face-dark shadow-sm hover:shadow-lion transition-all duration-200 overflow-hidden cursor-pointer"
-      onClick={handleSurveyClick}
-    >
-      <div className="flex items-start p-4 gap-2">
-        <div className="p-3 rounded-full flex-shrink-0 shadow-sm bg-gradient-to-br from-lion-orange to-lion-red">
-          <ClipboardList className="h-5 w-5 text-white" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-start justify-between gap-x-2 gap-y-1 mb-1">
-            <h3 className="font-bold text-lion-accent leading-tight flex-1 min-w-[140px]">問卷任務 (Surveys)</h3>
-            <div className="bg-lion-face px-3 py-1 rounded-full text-lion-orange font-medium text-xs sm:text-sm border border-lion-face-dark whitespace-nowrap">
-              + Honey
-            </div>
+    <div className="bg-white rounded-xl border-2 border-lion-orange/20 shadow-sm overflow-hidden mb-4">
+      <div className="bg-gradient-to-r from-lion-orange/10 to-transparent p-4 border-b border-lion-orange/10">
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-full bg-lion-orange text-white">
+            <ClipboardList className="h-5 w-5" />
           </div>
-          <p className="text-sm text-gray-600 leading-snug">完成問卷調查，賺取豐富獎勵</p>
+          <div>
+            <h3 className="font-bold text-lion-accent">CPX 問卷任務</h3>
+            <p className="text-xs text-gray-600">填問卷賺 Honey，完成後可獲得 BTC 等值獎勵</p>
+          </div>
         </div>
       </div>
+      
+      <div className="p-4 space-y-3">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-6 text-lion-orange">
+            <Loader2 className="h-8 w-8 animate-spin mb-2" />
+            <p className="text-sm font-medium">小蜜蜂正在為您尋找問卷...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-6 bg-red-50 rounded-lg">
+            <p className="text-red-500 text-sm">問卷載入失敗，請稍後再試</p>
+          </div>
+        ) : surveys.length === 0 ? (
+          <div className="text-center py-6">
+            <p className="text-gray-500 text-sm">目前沒有適合你的問卷，晚點再回來看看，小蜜蜂正在找新的任務 🐝</p>
+          </div>
+        ) : (
+          surveys.map((survey) => (
+            <div key={survey.id} className="border border-gray-100 rounded-lg p-3 hover:border-lion-orange transition-colors cursor-pointer" onClick={() => handleSurveyClick(survey)}>
+              <div className="flex justify-between items-start mb-2">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  <Clock className="h-3 w-3" />
+                  約 {survey.loi} 分鐘
+                </div>
+                {survey.tags?.includes("webcam") && (
+                  <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-medium">需鏡頭</span>
+                )}
+                {survey.tags?.includes("hot") && (
+                  <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-medium">熱門</span>
+                )}
+              </div>
+              
+              <div className="flex justify-between items-end">
+                <div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-gray-600">最高可獲得</span>
+                    <span className="text-lg font-bold text-lion-orange">{survey.reward_honey} Honey</span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1">完成並通過驗證後，5 天後可提領</p>
+                </div>
+                <Button size="sm" variant="orange" className="h-8 px-3 text-xs" onClick={(e) => { e.stopPropagation(); handleSurveyClick(survey); }}>
+                  開始問卷
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <AlertDialog open={!!selectedSurvey} onOpenChange={(open) => !open && setSelectedSurvey(null)}>
+        <AlertDialogContent className="bg-white max-w-sm rounded-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-center">即將前往 CPX Research 問卷</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-gray-600 pt-2 space-y-2">
+              <p>您即將離開 BitBee 前往填寫問卷。</p>
+              <p className="font-medium text-lion-orange bg-lion-orange/10 p-2 rounded-md">完成並通過 CPX 驗證後，獎勵會先進入 Pending Honey，5 天後才可提領。</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-col sm:space-x-0 mt-4">
+            <AlertDialogAction className="w-full bg-lion-orange hover:bg-lion-red text-white font-bold" onClick={handleSimulateCompletion}>
+              模擬完成問卷 (回傳 Postback)
+            </AlertDialogAction>
+            <Button variant="outline" className="w-full" onClick={() => setSelectedSurvey(null)}>
+              取消
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

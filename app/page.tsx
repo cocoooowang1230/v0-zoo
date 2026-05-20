@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Progress } from "@/components/ui/progress"
-import { Gift, Copy, Users, Check } from "lucide-react"
+import { Gift, Copy, Users, Check, Clock } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
 import { cn, formatCryptoValue } from "@/lib/utils"
 import { BottomNavigation } from "@/components/bottom-navigation"
@@ -43,6 +43,7 @@ export default function Home() {
   })
   const [todaysClaimed, setTodaysClaimed] = useState(false)
   const [totalRewards, setTotalRewards] = useState(0.00000038)
+  const [pendingHoney, setPendingHoney] = useState(0)
   const [linkCopied, setLinkCopied] = useState(false)
   const [isWalletConnected, setIsWalletConnected] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
@@ -109,6 +110,11 @@ export default function Home() {
 
     if (savedWalletStatus === "true") {
       setIsWalletConnected(true)
+    }
+
+    const savedPendingHoney = localStorage.getItem("pendingHoney")
+    if (savedPendingHoney) {
+      setPendingHoney(Number(savedPendingHoney))
     }
   }, [])
 
@@ -326,9 +332,17 @@ export default function Home() {
         <Card className="p-4 rounded-xl bg-white border-2 border-lion-orange/20 shadow-lion">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 className="text-sm sm:text-lg font-bold text-lion-accent truncate flex-1 min-w-[120px]">王琳瑄Coco的錢包</h2>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <Image src="/images/honey-icon.png" alt="Honey" width={24} height={24} className="object-contain" />
-              <span className="text-base sm:text-lg font-bold text-black whitespace-nowrap">HONEY x 30</span>
+            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+              <div className="flex items-center gap-1.5">
+                <Image src="/images/honey-icon.png" alt="Honey" width={24} height={24} className="object-contain" />
+                <span className="text-base sm:text-lg font-bold text-black whitespace-nowrap">HONEY x 30</span>
+              </div>
+              {pendingHoney > 0 && (
+                <div className="bg-lion-orange/10 px-2 py-0.5 rounded-full border border-lion-orange/20 flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-lion-orange" />
+                  <span className="text-[10px] font-bold text-lion-orange">Pending: {pendingHoney}</span>
+                </div>
+              )}
             </div>
           </div>
 

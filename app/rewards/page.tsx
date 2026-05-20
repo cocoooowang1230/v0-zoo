@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 export default function RewardsPage() {
   // Sample reward history data
   const rewardHistory = [
-    { id: 0, type: "CPX 問卷任務", token: "HONEY", amount: 150, timestamp: "2026-05-14 10:20" },
     { id: 1, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-05-11 13:45" },
     { id: 2, type: "加入社區", token: "ZOO", amount: 3, timestamp: "2025-05-10 18:22" },
     { id: 3, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-05-10 09:15" },
@@ -36,16 +35,39 @@ export default function RewardsPage() {
     { id: 22, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-04-28 09:05" },
   ]
 
+  const [dynamicRewardHistory, setDynamicRewardHistory] = useState<any[]>([])
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
-  const totalPages = Math.ceil(rewardHistory.length / itemsPerPage)
+  const totalPages = Math.ceil(dynamicRewardHistory.length / itemsPerPage) || 1
+
+  import("react").then(({ useEffect }) => {
+    useEffect(() => {
+      const pendingSurveysStr = localStorage.getItem("pendingSurveys")
+      let pendingSurveys: any[] = []
+      if (pendingSurveysStr) {
+        try {
+          const parsed = JSON.parse(pendingSurveysStr)
+          pendingSurveys = parsed.map((ps: any, idx: number) => ({
+            id: `pending_${idx}`,
+            type: "CPX 問卷任務",
+            token: "HONEY",
+            amount: ps.amount,
+            timestamp: ps.timestamp ? new Date(ps.timestamp).toLocaleString("sv-SE").slice(0, 16) : "Just now",
+            status: "驗證中"
+          }))
+        } catch(e){}
+      }
+      setDynamicRewardHistory([...pendingSurveys, ...rewardHistory])
+    }, [])
+  })
 
   // Get current page items
   const getCurrentPageItems = () => {
     const startIndex = (currentPage - 1) * itemsPerPage
     const endIndex = startIndex + itemsPerPage
-    return rewardHistory.slice(startIndex, endIndex)
+    return dynamicRewardHistory.slice(startIndex, endIndex)
   }
 
   // Navigation functions
@@ -129,9 +151,16 @@ export default function RewardsPage() {
                     <p className="text-xs text-gray-500">{reward.timestamp}</p>
                   </div>
                 </div>
-                <span className={`font-medium ${getTokenColor(reward.token)}`}>
-                  + {reward.amount} ${reward.token}
-                </span>
+                <div className="flex flex-col items-end">
+                  <span className={`font-medium ${getTokenColor(reward.token)}`}>
+                    + {reward.amount} ${reward.token}
+                  </span>
+                  {reward.status === "驗證中" && (
+                    <span className="text-[10px] bg-lion-orange/10 text-lion-orange px-1.5 py-0.5 rounded border border-lion-orange/20 mt-1">
+                      驗證中 (5天後解鎖)
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
