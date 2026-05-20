@@ -35,7 +35,7 @@ export default function RewardsPage() {
     { id: 22, type: "每日簽到", token: "KAIA", amount: 1, timestamp: "2025-04-28 09:05" },
   ]
 
-  const [dynamicRewardHistory, setDynamicRewardHistory] = useState<any[]>([])
+  const [dynamicRewardHistory, setDynamicRewardHistory] = useState<any[]>(rewardHistory)
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -170,7 +170,7 @@ export default function RewardsPage() {
         <Card className="p-4 rounded-xl bg-white border-2 border-lion-teal/20 shadow-lion-teal">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-lg font-bold text-lion-accent">獎勵歷史</h2>
-            <span className="text-xs text-gray-500">共 {rewardHistory.length} 筆記錄</span>
+            <span className="text-xs text-gray-500">共 {dynamicRewardHistory.length} 筆記錄</span>
           </div>
 
           <div className="space-y-2">
